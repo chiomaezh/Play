@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <link rel="stylesheet" href="https://use.typekit.net/pty8jvh.css">
+  
+  <title>What Kind of Brand Are You? — A SABI Exercise</title>
+  <meta name="description" content="A brand identity word search by SABI. We've figured that any brand's ethos can be reduced to a combination of four of these adjectives. Your intuition will probably lead you to the four words that resonate best with your brand." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=owners-text:wght@350;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FAFBE3;
+      --surface: #FAFBE3;
+      --border: #423A3A;
+      --border-light: #423A3A;
+      --text: #211D1D;
+      --found-bg: #211D1D;
+      --found-text: #FAFBE3;
+      --select-bg: #E8E9C8;
+      --select-text: #211D1D;
+      --font-body: 'owners-text', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-weight: 350;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    .page { width: 100%; max-width: 720px; }
+
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3.5rem;
+      border-bottom: 0.5px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    .site-name {
+      font-family: "all-round-gothic", sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0px;
+      color: var(--text);
+    }
+    .site-tag {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .game-label {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 11px;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      margin-bottom: 0.6rem;
+    }
+    .game-title {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: clamp(28px, 5vw, 36px);
+      line-height: 1.1;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    .game-intro {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.9;
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+
+    .grid-wrap {
+      overflow-x: auto;
+      margin-bottom: 2rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    .ws-grid {
+      display: grid;
+      width: fit-content;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .ws-cell {
+      width: 25px;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 10.5px;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      border: 0.5px solid var(--border-light);
+      opacity: 0.85;
+      transition: background 0.08s;
+      
+      aspect-ratio: 1 / 1;
+    }
+    .ws-cell:hover { background: rgba(66,58,58,0.07); }
+    .ws-cell.selected { background: var(--select-bg); color: var(--select-text); opacity: 1; }
+    .ws-cell.found { background: var(--found-bg); color: var(--found-text); border-color: var(--found-bg); opacity: 1; }
+
+    .section-label {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 11px;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+    }
+    .wordlist {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+    .ws-word {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 10.5px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border: 0.5px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      background: transparent;
+      transition: all 0.2s;
+    }
+    .ws-word.found {
+      background: var(--found-bg);
+      color: var(--found-text);
+      border-color: var(--found-bg);
+      text-decoration: line-through;
+    }
+
+    .game-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 3rem;
+    }
+    .progress-text {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .btn-reset {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      background: none;
+      border: 0.5px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-reset:hover { background: rgba(66,58,58,0.07); }
+
+    .complete-banner {
+      display: none;
+      background: var(--found-bg);
+      color: var(--found-text);
+      padding: 1rem 1.25rem;
+      border-radius: 3px;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 12px;
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+    .complete-banner.show { display: block; }
+
+    .reflection {
+      border-top: 0.5px solid var(--border);
+      padding-top: 2rem;
+      margin-bottom: 3rem;
+    }
+    .reflection h2 {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text);
+      margin-bottom: 0.85rem;
+    }
+    .reflection p {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.9;
+      max-width: 540px;
+    }
+
+    .site-footer {
+      border-top: 0.5px solid var(--border);
+      padding-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .site-footer p {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 11px;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 500px) {
+      .ws-grid {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.ws-cell {
+  width: auto;
+  height: auto;
+}
+}
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+  <span class="site-tag">Brain Game 01</span>
+  <span class="site-name">S A B I</span>
+</header>
+
+  <main>
+    <p class="game-label">Word Search</p>
+    <h1 class="game-title">What kind of<br>brand are you?</h1>
+    <p class="game-intro">
+     We've figured that any brand's ethos can be summarised by a combination of 4 of the words hidden in this grid.
+      Find all 24, then pay attention to the ones you were drawn to first. Click and drag to highlight.
+    </p>
+
+    <div class="grid-wrap">
+      <div class="ws-grid" id="grid"></div>
+    </div>
+
+    <p class="section-label">Words to find</p>
+    <div class="wordlist" id="wordlist"></div>
+
+    <div class="complete-banner" id="complete-banner">
+      All words found. ✦ Which ones were the easist to spot? Your intuition probably led you there.
+    </div>
+
+    <div class="game-footer">
+      <span class="progress-text" id="progress">0 of 24 words found</span>
+      <button class="btn-reset" onclick="resetGame()">↺ Reset</button>
+    </div>
+
+    <div class="reflection">
+      <h2>What to do with what you found</h2>
+      <p>
+        The words you gravitated toward — especially the ones you found without looking —
+        are clues to how you instinctively understand your brand. Now you can bring them to a consultation, and use them as guidelines for your brand identity. At SABI, we use exercises like this to help
+        creative teams articulate what they already know.
+      </p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© SABI London</p>
+    <p>BRAND STRATEGY REVIEW · WORLD BUILDING · COPY · COMMUNITY &amp; PARTNERSHIPS</p>
+  </footer>
+
+</div>
+<script>
+const WORDS = [
+  'SOPHISTICATED','SCIENTIFIC','NATURAL','DISCREET','VIBRANT',
+  'CONFIDENTIAL','SUPPORTIVE','CONSERVATIVE','YOUTHFUL','ATTENTIVE',
+  'ARTISANAL','GLAMOROUS','HISTORICAL','FUTURISTIC','APPROACHABLE',
+  'ESSENTIAL','FUNCTIONAL','TECHNICAL','MINIMALIST','PLAYFUL',
+  'BOLD','NURTURING','INVENTIVE','ALTERNATIVE'
+];
+const IS_MOBILE = window.innerWidth <= 500;
+
+const COLS = IS_MOBILE ? 16 : 28;
+const ROWS = IS_MOBILE ? 40 : 28;
+let grid = [], placed = [], selecting = false, startCell = null;
+let currentSelection = [], foundWords = [], foundCells = [];
+
+function makeGrid() {
+  return Array.from({ length: ROWS }, () =>
+    Array(COLS).fill('')
+  );
+}
+function canPlace(g, word, r, c, dr, dc) {
+  for (let i = 0; i < word.length; i++) {
+    const nr = r + dr*i, nc = c + dc*i;
+    if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return false;
+    if (g[nr][nc] && g[nr][nc] !== word[i]) return false;
+  }
+  return true;
+}
+function placeWord(g, word, r, c, dr, dc) {
+  const cells = [];
+  for (let i = 0; i < word.length; i++) {
+    g[r+dr*i][c+dc*i] = word[i];
+    cells.push([r+dr*i, c+dc*i]);
+  }
+  return cells;
+}
+function buildPuzzle() {
+  grid = makeGrid(); placed = [];
+  const dirs = [
+  [0,1],[1,0]
+];
+  const sorted = [...WORDS].sort((a,b) => b.length - a.length);
+  for (const word of sorted) {
+    let done = false;
+    for (let attempt = 0; attempt < 600 && !done; attempt++) {
+      const [dr,dc] = dirs[Math.floor(Math.random()*dirs.length)];
+      const r = Math.floor(Math.random() * ROWS);
+      const c = Math.floor(Math.random() * COLS);
+      if (canPlace(grid, word, r, c, dr, dc)) {
+        const cells = placeWord(grid, word, r, c, dr, dc);
+        placed.push({word, cells}); done = true;
+      }
+    }
+  }
+  const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r = 0; r < ROWS; r++)
+  for (let c = 0; c < COLS; c++)
+    if (!grid[r][c]) grid[r][c] = L[Math.floor(Math.random()*26)];
+}
+function cellKey(r,c){ return r+','+c; }
+function getLine(r1,c1,r2,c2) {
+  const dr=Math.sign(r2-r1), dc=Math.sign(c2-c1);
+  if (r1===r2&&c1===c2) return [[r1,c1]];
+  if (r1===r2||c1===c2||(Math.abs(r2-r1)===Math.abs(c2-c1))) {
+    const cells=[]; let r=r1,c=c1;
+    const steps=Math.max(Math.abs(r2-r1),Math.abs(c2-c1));
+    for(let i=0;i<=steps;i++){cells.push([r,c]);r+=dr;c+=dc;}
+    return cells;
+  }
+  return [[r1,c1]];
+}
+function startSelect(e) {
+  selecting=true;
+  startCell={r:+e.target.dataset.r, c:+e.target.dataset.c};
+  currentSelection=[[startCell.r,startCell.c]];
+  highlightSelection(currentSelection);
+}
+function extendSelect(e) {
+  if (!selecting||!startCell) return;
+  const r=+e.target.dataset.r, c=+e.target.dataset.c;
+  currentSelection=getLine(startCell.r,startCell.c,r,c);
+  highlightSelection(currentSelection);
+}
+function endSelect() {
+  if (!selecting) return;
+  selecting=false;
+  checkSelection(currentSelection);
+  currentSelection=[];
+  renderGrid();
+}
+function highlightSelection(cells) {
+  document.querySelectorAll('.ws-cell').forEach(el => {
+    const key=cellKey(el.dataset.r,el.dataset.c);
+    el.className='ws-cell';
+    if (foundCells.includes(key)) el.classList.add('found');
+  });
+  cells.forEach(([r,c]) => {
+    const key=cellKey(r,c);
+    if (!foundCells.includes(key)) {
+      const el=document.querySelector('.ws-cell[data-r="'+r+'"][data-c="'+c+'"]');
+      if (el) el.classList.add('selected');
+    }
+  });
+}
+function checkSelection(cells) {
+  const str=cells.map(([r,c])=>grid[r][c]).join('');
+  const rev=str.split('').reverse().join('');
+  for (const {word,cells:wCells} of placed) {
+    if (foundWords.includes(word)) continue;
+    if (str===word||rev===word) {
+      const selKeys=new Set(cells.map(([r,c])=>cellKey(r,c)));
+      const wKeys=new Set(wCells.map(([r,c])=>cellKey(r,c)));
+      if ([...selKeys].every(k=>wKeys.has(k))&&selKeys.size===wKeys.size) {
+        foundWords.push(word);
+        wCells.forEach(([r,c])=>{ if(!foundCells.includes(cellKey(r,c))) foundCells.push(cellKey(r,c)); });
+        updateWordList(); updateProgress(); return;
+      }
+    }
+  }
+}
+function updateWordList() {
+  document.querySelectorAll('.ws-word').forEach(el => {
+    if (foundWords.includes(el.dataset.word)) el.classList.add('found');
+  });
+}
+function updateProgress() {
+  document.getElementById('progress').textContent=foundWords.length+' of '+WORDS.length+' words found';
+  if (foundWords.length===WORDS.length)
+    document.getElementById('complete-banner').classList.add('show');
+}
+function renderGrid() {
+  const el=document.getElementById('grid');
+ el.style.gridTemplateColumns =
+  `repeat(${COLS}, 1fr)`;
+  el.innerHTML='';
+  for (let r = 0; r < ROWS; r++) {
+  for (let c = 0; c < COLS; c++) {
+      const cell=document.createElement('div');
+      cell.className='ws-cell';
+      cell.textContent=grid[r][c];
+      cell.dataset.r=r; cell.dataset.c=c;
+      if (foundCells.includes(cellKey(r,c))) cell.classList.add('found');
+      cell.addEventListener('mousedown', startSelect);
+      cell.addEventListener('mouseenter', extendSelect);
+      cell.addEventListener('mouseup', endSelect);
+      cell.addEventListener('touchstart', e=>{e.preventDefault();startSelect({target:e.target});},{passive:false});
+      cell.addEventListener('touchmove', e=>{
+        e.preventDefault();
+        const t=e.touches[0];
+        const over=document.elementFromPoint(t.clientX,t.clientY);
+        if(over&&over.classList.contains('ws-cell')) extendSelect({target:over});
+      },{passive:false});
+      cell.addEventListener('touchend', endSelect);
+      el.appendChild(cell);
+    }
+  }
+}
+function renderWordList() {
+  document.getElementById('wordlist').innerHTML=
+    WORDS.map(w=>'<span class="ws-word" data-word="'+w+'">'+w+'</span>').join('');
+}
+function resetGame() {
+  foundWords=[]; foundCells=[]; currentSelection=[]; selecting=false; startCell=null;
+  document.getElementById('complete-banner').classList.remove('show');
+  buildPuzzle(); renderGrid(); renderWordList();
+  document.getElementById('progress').textContent='0 of '+WORDS.length+' words found';
+}
+document.addEventListener('mouseup', ()=>{
+  if(selecting){selecting=false;checkSelection(currentSelection);currentSelection=[];renderGrid();}
+});
+buildPuzzle(); renderGrid(); renderWordList();
+</script>
+</body>
+</html>
