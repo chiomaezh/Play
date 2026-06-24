@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="https://use.typekit.net/pty8jvh.css">
+
+  <title>Know Your Jargon — Buzzword, A SABI Exercise</title>
+  <meta name="description" content="Buzzword, a marketing acronym game by SABI. These 35 terms aren't just acronyms to memorise — they're the core business functions every creative or entrepreneur needs to confidently understand." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=owners-text:wght@350;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FAFBE3;
+      --surface: #FAFBE3;
+      --border: #423A3A;
+      --border-light: #423A3A;
+      --text: #211D1D;
+      --found-bg: #211D1D;
+      --found-text: #FAFBE3;
+      --select-bg: #E8E9C8;
+      --select-text: #211D1D;
+      --wrong-fill: rgba(182, 175, 169, 0.5);
+      --font-body: 'owners-text', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-weight: 350;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    .page { width: 100%; max-width: 720px; }
+
+    /* ── Header ── */
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3.5rem;
+      border-bottom: 0.5px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    .site-name {
+      font-family: "all-round-gothic", sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .site-tag {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* ── Game header ── */
+    .game-label {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 11px;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      margin-bottom: 0.6rem;
+    }
+    .game-title {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: clamp(28px, 5vw, 36px);
+      line-height: 1.1;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    .game-intro {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.9;
+      max-width: 540px;
+      margin-bottom: 2rem;
+    }
+
+    /* ── Mode toggle ── */
+    .mode-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 2.5rem;
+    }
+    .mode-label {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text);
+      opacity: 0.65;
+      transition: opacity 0.15s;
+    }
+    .mode-label.active { opacity: 1; }
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 22px;
+      border: 0.5px solid var(--border);
+      border-radius: 11px;
+      background: #211D1D;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg);
+      transition: transform 0.18s ease;
+    }
+    .toggle.is-easy .toggle-knob { transform: translateX(0px); }
+    .toggle:not(.is-easy) .toggle-knob { transform: translateX(20px); }
+
+    /* ── Flashcard ── */
+    .flashcard {
+      border: 0.5px solid var(--border);
+      border-radius: 0;
+      padding: 1.5rem 2.25rem 2.1rem;
+      margin-bottom: 2rem;
+      min-height: 148px;
+      display: flex;
+      align-items: center;
+    }
+    .flashcard p {
+      font-family: var(--font-body);
+      font-weight: 350;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text);
+      text-align: justify;
+    }
+
+    /* ── Answer options ── */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+    .option {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 0.5px solid var(--border);
+      border-radius: 0;
+      padding: 0.9rem 1.1rem;
+      cursor: pointer;
+      background: transparent;
+      transition: background 0.12s, border-width 0.05s;
+      width: 100%;
+      text-align: left;
+    }
+    .option:hover:not(.locked) { background: rgba(66,58,58,0.05); }
+    .option-letter {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: #423A3A;
+      opacity: 1;
+      flex-shrink: 0;
+      width: 14px;
+    }
+    .option-text {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      flex: 1;
+    }
+    .option-mark {
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 400;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .option.wrong {
+      background: var(--wrong-fill);
+    }
+    .option.correct {
+      border-width: 3px;
+      border-color: #000000;
+      padding: calc(0.9rem - 2px) calc(1.1rem - 2px);
+    }
+    .option.locked { cursor: default; }
+
+    /* ── Footer controls ── */
+    .game-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 3rem;
+      min-height: 38px;
+    }
+    .progress-text {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .btn-next {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--found-text);
+      background: var(--found-bg);
+      border: 0.5px solid var(--found-bg);
+      padding: 8px 16px;
+      border-radius: 0;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .btn-next.show { opacity: 1; pointer-events: auto; }
+    .btn-next:hover { background: #000000; }
+
+    /* ── Reflection ── */
+    .reflection {
+      border-top: 0.5px solid var(--border);
+      padding-top: 2rem;
+      margin-bottom: 3rem;
+    }
+    .reflection h2 {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text);
+      margin-bottom: 0.85rem;
+    }
+    .reflection p {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.9;
+      max-width: 540px;
+    }
+
+    /* ── Site footer ── */
+    .site-footer {
+      border-top: 0.5px solid var(--border);
+      padding-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .site-footer p {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 11px;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 500px) {
+      .site-footer p:last-child { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <span class="site-tag">Brain Game 02</span>
+    <a href="https://www.sabi.london" class="site-name">S A B I</a>
+  </header>
+
+  <main>
+    <p class="game-label">Buzzword</p>
+    <h1 class="game-title">Know your jargon</h1>
+    <p class="game-intro">
+      These 35 terms aren't just acronyms to memorise — they're core business
+      functions every creative or entrepreneur needs to confidently understand,
+      whether you remember the letters or not. Read the definition, then choose
+      the acronym it belongs to.
+    </p>
+
+    <div class="mode-row">
+      <span class="mode-label" id="label-easy">EASY</span>
+      <button class="toggle" id="mode-toggle" aria-label="Toggle easy or pro mode" role="switch" aria-checked="false">
+        <span class="toggle-knob"></span>
+      </button>
+      <span class="mode-label active" id="label-pro">PRO</span>
+    </div>
+
+    <div class="flashcard">
+      <p id="definition-text"></p>
+    </div>
+
+    <div class="options" id="options"></div>
+
+    <div class="game-footer">
+      <span class="progress-text" id="progress">01 / 35</span>
+      <button class="btn-next" id="next-btn">Next →</button>
+    </div>
+
+    <div class="reflection">
+      <h2>Why this matters</h2>
+      <p>
+        You don't need to recite every acronym from memory — but you do need a
+        confident grip on what each function actually does for your business.
+        These are the conversations that come up in every strategy session,
+        every pitch deck, every investor call. Knowing the substance behind the
+        shorthand is what separates jargon from judgement.
+      </p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© SABI London</p>
+    <p>BRAND STRATEGY REVIEW · WORLD BUILDING · COPY · COMMUNITY &amp; PARTNERSHIPS</p>
+  </footer>
+
+</div>
+
+<script>
+const ACRONYMS = {"AOV": {"expanded": "Average Order Value", "def": "The average amount of money a customer spends each time they complete a purchase."}, "CTR": {"expanded": "Click-Through Rate", "def": "The percentage of people who see your ad and actually click on it."}, "EMV": {"expanded": "Earned Media Value", "def": "An estimation of the monetary equivalent of unpaid, organic media exposure – such as influencer mentions, social media shares, press coverage, reviews, and word-of-mouth recommendations."}, "ROI": {"expanded": "Return on Investment", "def": "A percentage calculation used to measure the profitability of an investment or budget. To calculate it, divide net profit by the total cost of the investment."}, "KPI": {"expanded": "Key Performance Indicator", "def": "A measurable value that demonstrates how effectively a company is achieving key business objectives."}, "CRM": {"expanded": "Customer Relationship Management", "def": "Software and strategies used to manage and analyze customer interactions to improve engagement, retention, and loyalty."}, "CMS": {"expanded": "Content Management System", "def": "The software that allows multiple users to create, edit, and publish digital content without needing advanced coding knowledge."}, "CTA": {"expanded": "Call to Action", "def": "A prompt that encourages users to take immediate action. For example, a button, link, or instruction."}, "CLTV": {"expanded": "Customer Lifetime Value", "def": "The total revenue or net profit expected to be generated from a single customer throughout their relationship with a business. A high estimate indicates good customer retention."}, "GTM": {"expanded": "Go-to-Market", "def": "A comprehensive, cross-functional strategy plan detailing exactly how a company will launch a new product or enter a new market."}, "NPS": {"expanded": "Net Promoter Score", "def": "A score that measures customer loyalty by asking customers a single question: “How likely are you to recommend our company to a friend or colleague on a scale of one to ten?”"}, "ICP": {"expanded": "Ideal Customer Profile", "def": "A detailed, fictitious description of the type of customer that would get the most value from your product or service."}, "USP": {"expanded": "Unique Selling Proposition", "def": "The key feature or benefit that makes your business better than its competitors."}, "UGC": {"expanded": "User-Generated Content", "def": "Any content – such as reviews, testimonials, or social media posts – created by your customers rather than your brand."}, "CPM": {"expanded": "Cost per Mille", "def": "A common pricing model where advertisers pay a set price for every 1000 impressions their ad receives. This is often used for brand awareness campaigns where visibility is a higher priority than clicks."}, "B2B": {"expanded": "Business-to-Business", "def": "Marketing products or services to other companies."}, "B2C": {"expanded": "Business-to-Consumer", "def": "Marketing products or services to everyday consumers."}, "D2C": {"expanded": "Direct-to-Consumer", "def": "A retail business model where a brand sells its products directly to the end customer, bypassing third-party wholesalers, distributors, or retailers."}, "SEO": {"expanded": "Search Engine Optimisation", "def": "The process of improving your website – its content, backend development, and trust signalling – so it appears higher on search engine results pages."}, "GEO": {"expanded": "Generative Engine Optimisation", "def": "Structuring and refining digital content so it is easily understood, trusted, and cited by AI search tools."}, "CPC": {"expanded": "Cost per Click", "def": "An advertising pricing model where a digital platform hosts an ad for a brand, and the brand only pays when a user clicks the ad."}, "CPL": {"expanded": "Cost per Lead", "def": "An advertising pricing model where companies pay a platform for each lead generated by an ad, rather than impressions or clicks. A lead is a potential customer who has shown interest in your brand by voluntarily providing their contact information."}, "CPA": {"expanded": "Cost-Per-Acquisition", "def": "The cost of acquiring one paying customer, or converting a lead (when a potential customer shows active interest in your brand by voluntarily providing their contact information)."}, "CR": {"expanded": "Conversion Rate", "def": "The percentage of website users who take a desired action."}, "ESP": {"expanded": "Email Service Provider", "def": "A software platform used to create, send, automate, and manage email marketing campaigns, such as Mailchimp or Klaviyo."}, "SQL": {"expanded": "Sales Qualified Lead", "def": "A potential customer that has been evaluated and deemed ready for direct contact by a brand’s sales team because they are considered likely to make a purchase."}, "UX": {"expanded": "User Experience", "def": "The overall experience a person has when interacting with a website, app, or product, including how easy, efficient, and enjoyable it is to use."}, "UI": {"expanded": "User Interface", "def": "The visual elements of a digital product – such as buttons, menus, colours, and layouts – that users interact with."}, "CX": {"expanded": "Customer Experience", "def": "The overall perception customers have of your brand based on every interaction they have with your business before, during, and after a purchase."}, "SWOT": {"expanded": "Strengths Weaknesses Opportunities Threats", "def": "A strategic planning method used by businesses to assess internal capabilities and external market factors."}, "SKU": {"expanded": "Stock Keeping Unit", "def": "A unique alphanumeric code that retailers and businesses assign to products to internally track inventory, monitor sales, and manage stock levels."}, "OMO": {"expanded": "Online-Merge-Offline", "def": "A business and marketing strategy that erases the boundaries between digital and physical retail."}, "SOV": {"expanded": "Share of Voice", "def": "A measure of your brand’s visibility and overall presence in the market compared to your competitors."}, "VOC": {"expanded": "Voice of Customer", "def": "Feedback and insights gathered directly from customers to understand their needs and perceptions."}, "GDPR": {"expanded": "General Data Protection Regulation", "def": "A comprehensive data privacy and security law created by the European Union. It applies to businesses anywhere in the world that collect or target data from customers or clients who are EU residents."}};
+
+const COMBINATIONS = [["AOV", ["CLTV", "ROI", "CR"]], ["CTR", ["CPC", "CPM", "CR"]], ["EMV", ["UGC", "SOV", "NPS"]], ["ROI", ["KPI", "CPA", "AOV"]], ["KPI", ["ROI", "GTM", "SWOT"]], ["CRM", ["CMS", "ESP", "CX"]], ["CMS", ["CRM", "ESP", "SEO"]], ["CTA", ["CTR", "CR", "UX"]], ["CLTV", ["AOV", "CRM", "CPA"]], ["GTM", ["ICP", "USP", "SWOT"]], ["NPS", ["CX", "UGC", "EMV"]], ["ICP", ["USP", "GTM", "B2B"]], ["USP", ["ICP", "GTM", "SWOT"]], ["UGC", ["EMV", "SOV", "NPS"]], ["CPM", ["CPC", "CTR", "CPL"]], ["B2B", ["B2C", "D2C", "OMO"]], ["B2C", ["B2B", "D2C", "OMO"]], ["D2C", ["B2C", "B2B", "OMO"]], ["SEO", ["GEO", "CMS", "SOV"]], ["GEO", ["SEO", "UX", "CMS"]], ["CPC", ["CTR", "CPM", "CPL"]], ["CPL", ["CPA", "CPC", "SQL"]], ["CPA", ["CPL", "CPC", "ROI"]], ["CR", ["CTR", "CTA", "UX"]], ["ESP", ["CRM", "CMS", "GDPR"]], ["SQL", ["CRM", "NPS", "CLTV"]], ["UX", ["UI", "CX", "CR"]], ["UI", ["UX", "CX", "CMS"]], ["CX", ["UX", "CRM", "NPS"]], ["SWOT", ["GTM", "USP", "KPI"]], ["SKU", ["CMS", "OMO", "D2C"]], ["OMO", ["D2C", "B2C", "UX"]], ["SOV", ["EMV", "UGC", "SEO"]], ["VOC", ["GDPR", "CRM", "ESP"]], ["GDPR", ["ESP", "CRM", "VOC"]]];
+
+let order = [];
+let currentIndex = 0;
+let isEasyMode = false;
+let answered = false;
+
+function shuffledOrder() {
+  const arr = COMBINATIONS.map((_, i) => i);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleOptions(correct, distractors) {
+  const opts = [correct, ...distractors];
+  for (let i = opts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
+  }
+  return opts;
+}
+
+function init() {
+  order = shuffledOrder();
+  currentIndex = 0;
+  loadQuestion();
+}
+
+let currentOptionOrder = [];
+
+function loadQuestion() {
+  answered = false;
+  const comboIdx = order[currentIndex];
+  const [correct, distractors] = COMBINATIONS[comboIdx];
+  currentOptionOrder = shuffleOptions(correct, distractors);
+
+  document.getElementById('definition-text').textContent = ACRONYMS[correct].def;
+
+  const optionsEl = document.getElementById('options');
+  optionsEl.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  currentOptionOrder.forEach((acr, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.dataset.acronym = acr;
+    btn.dataset.correct = (acr === correct) ? 'true' : 'false';
+
+    const letterSpan = document.createElement('span');
+    letterSpan.className = 'option-letter';
+    letterSpan.textContent = letters[i];
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'option-text';
+    textSpan.textContent = isEasyMode ? ACRONYMS[acr].expanded : acr;
+
+    const markSpan = document.createElement('span');
+    markSpan.className = 'option-mark';
+    markSpan.textContent = '';
+
+    btn.appendChild(letterSpan);
+    btn.appendChild(textSpan);
+    btn.appendChild(markSpan);
+    btn.addEventListener('click', () => selectOption(btn));
+    optionsEl.appendChild(btn);
+  });
+
+  document.getElementById('progress').textContent =
+    String(currentIndex + 1).padStart(2, '0') + ' / ' + String(COMBINATIONS.length).padStart(2, '0');
+  document.getElementById('next-btn').classList.remove('show');
+}
+
+function selectOption(btn) {
+  if (answered) return;
+
+  const isCorrect = btn.dataset.correct === 'true';
+  const mark = btn.querySelector('.option-mark');
+
+  if (isCorrect) {
+    answered = true;
+    document.querySelectorAll('.option.wrong').forEach(o => {
+      o.classList.remove('wrong');
+      o.querySelector('.option-mark').textContent = '';
+    });
+    btn.classList.add('correct');
+    mark.textContent = '✓';
+    document.querySelectorAll('.option').forEach(o => o.classList.add('locked'));
+    document.getElementById('next-btn').classList.add('show');
+  } else {
+    document.querySelectorAll('.option.wrong').forEach(o => {
+      if (o !== btn) {
+        o.classList.remove('wrong');
+        o.querySelector('.option-mark').textContent = '';
+      }
+    });
+    btn.classList.add('wrong');
+    mark.textContent = '✕';
+  }
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= order.length) {
+    order = shuffledOrder();
+    currentIndex = 0;
+  }
+  loadQuestion();
+}
+
+function updateOptionLabels() {
+  document.querySelectorAll('.option').forEach(btn => {
+    const acr = btn.dataset.acronym;
+    const textSpan = btn.querySelector('.option-text');
+    textSpan.textContent = isEasyMode ? ACRONYMS[acr].expanded : acr;
+  });
+}
+
+document.getElementById('mode-toggle').addEventListener('click', () => {
+  isEasyMode = !isEasyMode;
+  const toggle = document.getElementById('mode-toggle');
+  const labelEasy = document.getElementById('label-easy');
+  const labelPro = document.getElementById('label-pro');
+  toggle.classList.toggle('is-easy', isEasyMode);
+  toggle.setAttribute('aria-checked', String(isEasyMode));
+  labelEasy.classList.toggle('active', isEasyMode);
+  labelPro.classList.toggle('active', !isEasyMode);
+  updateOptionLabels();
+});
+
+document.getElementById('next-btn').addEventListener('click', nextQuestion);
+
+init();
+</script>
+</body>
+</html>
