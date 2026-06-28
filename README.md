@@ -1,2 +1,2 @@
-# play-sabi
+# sabi-games
 SABI Brain Games
