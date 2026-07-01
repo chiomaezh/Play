@@ -231,6 +231,34 @@
       max-width: 540px;
     }
 
+    /* ── Next/previous game nav ── */
+    .game-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2.5rem;
+      margin-bottom: -0.5rem;
+    }
+    .game-nav a {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 0.5px solid var(--border);
+      padding-bottom: 2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .game-nav a:hover { opacity: 0.7; }
+    .game-nav .inactive {
+      opacity: 0.65;
+      pointer-events: none;
+      cursor: default;
+    }
+
     .site-footer {
       border-top: 0.5px solid var(--border);
       padding-top: 1.5rem;
@@ -372,6 +400,10 @@
         are clues to how you instinctively understand your brand. Now you can bring them to a consultation, and use them as guidelines for your brand identity. At SABI, we use exercises like this to help
         creative teams articulate what they already know and feel.
       </p>
+      <div class="game-nav">
+        <a class="inactive" aria-disabled="true" tabindex="-1">← Previous Game</a>
+        <a href="https://play.sabi.london/buzzword/">Next Game →</a>
+      </div>
     </div>
   </main>
 
