@@ -12,6 +12,15 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    ::selection {
+      background: var(--text-select-bg);
+      color: var(--text-select-text);
+    }
+    ::-moz-selection {
+      background: var(--text-select-bg);
+      color: var(--text-select-text);
+    }
+
     :root {
       --bg: #FAFBE3;
       --surface: #FAFBE3;
@@ -22,6 +31,8 @@
       --found-text: #FAFBE3;
       --select-bg: #E8E9C8;
       --select-text: #211D1D;
+      --text-select-bg: #170006;
+      --text-select-text: #FFFFFF;
       --font-body: 'owners-text', sans-serif;
       --font-mono: 'gemeli-mono', serif;
     }
