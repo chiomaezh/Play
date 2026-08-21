@@ -1,86 +1,1477 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <link rel="icon" type="image/png" href="/favicon.png">
-  <title>SABI Play</title>
-  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#170006" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <link rel="stylesheet" href="https://use.typekit.net/bwp0bbg.css">
+
+  <title>Waiting Room — SABI</title>
+  <meta name="description" content="A London-based creative consultancy offering strategy, production, and design for culture-shaping presence and storytelling." />
+
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background-color: var(--wine);
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    :root {
+      --bg: #FAFBE3;
+      --text: #211D1D;
+      --wine: #170006;
+      --border: #423A3A;
+      --font-body: 'owners-text', sans-serif;
+      --font-mono: 'gemeli-mono', serif;
+    }
+
+    ::selection { background: rgba(183, 184, 168, 0.4); }
+    ::-moz-selection { background: rgba(183, 184, 168, 0.4); }
+
     body {
-      margin: 0;
+      font-family: var(--font-body);
+      font-weight: 350;
+      color: var(--text);
+      width: 100vw;
       height: 100vh;
-      background-color: #FAFBE3;
+      height: 100dvh;
+    }
+
+    /* ── Fixed viewfinder: grid of wine-top / wine-bottom / cream ── */
+    .viewfinder {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      grid-template-areas:
+        "top    right"
+        "bottom right";
+    }
+
+    .wine-block {
+      background: var(--wine);
+      height: 100%;
+      min-height: 0;
+      position: relative;
+    }
+    .wine-block--top { grid-area: top; }
+    .wine-block--bottom {
+      grid-area: bottom;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-direction: column;
+      padding-bottom: 1.5rem;
+      min-width: 0;
+    }
+
+    /* ── Hero copy, top wine block ── */
+    .hero-text {
+      padding: 6.5rem 1.5rem 2.08rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-top: 0;
+      text-align: right;
+      transition: margin-top 0.25s ease;
+    }
+    .hero-lead,
+    .hero-body {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 17.5px;
+      line-height: 1.7;
+      color: var(--bg);
+    }
+    .hero-lead { margin-bottom: 0.75rem; }
+
+    /* Desktop: the accordion push uses a transform instead of
+       margin-top. Margin forces the grid row to grow to fit the
+       content, and since the cream column spans both rows, growing the
+       top row drags the cream side down with it (and clipping the
+       overflow instead just cuts the hero text off). A transform never
+       affects layout/track sizing, so it only visually shifts the wine
+       side. The weather reel below gets the same transform so it moves
+       down in sync and never gets covered by the hero text. */
+    @media (min-width: 651px) {
+      .hero-text {
+        padding: 9rem 2.5rem 2rem;
+        transition: transform 0.25s ease;
+        transform: translateY(0);
+      }
+      .clocks-wrap {
+        transition: transform 0.25s ease;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── World clocks, bottom wine block: sideways-scrolling reel ── */
+    .clocks-wrap {
+      width: 100%;
+      min-width: 0;
+      padding: 4rem 1.5rem 2rem;
+    }
+
+    .weather-reel {
+      display: flex;
+      min-width: 0;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .weather-reel::-webkit-scrollbar { display: none; }
+    .weather-reel.is-ready { opacity: 1; }
+
+    /* Each block: city / time / weather, stacked — same font-family,
+       weights, letter-spacing and colour as the .ba-* weather blocks
+       on the About page. Width is set via JS to the widest natural
+       content across all cards, so every card is the same fixed
+       "card" size and nothing overflows. */
+    .wr-block {
+      flex: 0 0 auto;
+      box-sizing: border-box;
+      padding: 0 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .wr-city-name {
+      display: block;
+      width: 100%;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 9.8px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--bg);
+    }
+    .wr-city-inner {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .wr-city-name--small {
+      font-size: 9.3px !important;
+    }
+    .wr-city-time {
+      display: block;
+      width: 100%;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 31px;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+      color: var(--bg);
+      margin-top: 8px;
+    }
+    .wr-time-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      width: 100%;
+    }
+    .wr-city-weather {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 8px;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 22px;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+      color: var(--bg);
+      white-space: nowrap;
+    }
+    .wr-icon {
+      display: inline-block;
+      width: 25px;
+      height: 25px;
+    }
+    .wr-icon img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* Typeform-style progress bar: thin track + filled thumb showing
+       scroll position, draggable to scroll the reel. The visible bar
+       stays 3px, but a padded, invisible "hit" wrapper around it is
+       what actually receives clicks/drags, so it's easy to grab
+       without changing how thin it looks. */
+    .weather-scrollbar-hit {
+      width: 100%;
+      padding: 14px 0;
+      margin-top: 0.8rem;
+      cursor: pointer;
+      touch-action: none;
+    }
+    .weather-scrollbar-track {
+      position: relative;
+      width: 100%;
+      height: 3px;
+      background: rgba(250, 251, 227, 0.25);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .weather-scrollbar-thumb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--bg);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    @media (min-width: 651px) {
+      .clocks-wrap { padding: 2.5rem; }
+      .wr-block { padding: 0 14px; }
+      .wr-city-name { font-size: 9.8px; }
+      .wr-city-time { font-size: 28px; }
+      .wr-city-weather { font-size: 18px; }
+      .wr-icon { width: 22px; height: 22px; }
+      .weather-scrollbar-hit { margin-top: 1rem; }
+    }
+
+    /* ── Tagline row, below the scrollbar ── */
+    .weather-tagline {
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: baseline;
+      width: 100%;
+      margin-top: 0.8rem;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 14px;
+      line-height: 1.1;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--bg);
+    }
+
+    @media (min-width: 651px) {
+      .weather-tagline { margin-top: 1rem; }
+    }
+
+    /* ── Cream column: vertical scroller, horizontal card animation ──
+       The scroll interaction (wheel, trackbar, scrollbar) is vertical,
+       same as a normal scrollable panel. Visually though, the two
+       "pages" of scrollable height are just invisible snap targets —
+       the actual cards live in a sticky, pinned viewport and slide
+       left/right as you scroll down, so the transition itself reads as
+       horizontal. On phone it's unwrapped (see max-width query below)
+       so each card can be placed independently, stacked vertically, in
+       the mobile stack. */
+    .cream-col {
+      grid-area: right;
+      height: 100%;
+      background: var(--bg);
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      scroll-snap-type: y mandatory;
+    }
+
+    /* Pinned window onto the horizontal track: stays put at the top of
+       the scrollport for the whole scrollable range, so scrolling
+       vertically doesn't move it up/down — only the track inside it
+       slides. NOTE: this element intentionally does NOT carry
+       scroll-snap-align — sticky elements make unreliable snap targets
+       (their box appears "already in place" once stuck, which is what
+       was preventing scrolling back up to the music card). The actual
+       snap points are the plain, non-sticky markers below. */
+    .cream-viewport {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
     }
 
-    
-    .lockup {
+    /* Zero-footprint marker for the very first snap point (top of the
+       column). Plain and non-sticky, so it's an unambiguous snap
+       target. */
+    .cream-snap-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      pointer-events: none;
+    }
+
+    /* Invisible spacers: each gives the column one more "page" of
+       scrollable height with its own plain (non-sticky) snap target. */
+    .cream-snap-spacer {
+      width: 100%;
+      height: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+
+    .cream-track {
+      display: grid;
+      grid-template-columns: 50% 50%;
+      grid-template-rows: 50% 50%;
+      width: 200%;
+      height: 200%;
+    }
+
+    .cream-card {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      position: relative;
+    }
+
+    .cream-card--music { grid-column: 1; grid-row: 1; }
+    .cream-card--games { grid-column: 2; grid-row: 1; }
+    .cream-card--blank { grid-column: 2; grid-row: 2; }
+
+    .cream-card--music {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 43px;
-      opacity: 0;
-      animation: fadeIn 1.8s ease forwards;
+      overflow: hidden;
     }
 
-    .lockup img {
-      display: block;
-    }
-
-    .lockup a {
+    /* ── Brain Games card ── */
+    .cream-card--games {
       display: flex;
+      padding: 6.5rem 1.5rem 4rem;
+    }
+    @media (min-width: 651px) {
+      .cream-card--games {
+        /* Matches .hero-text's desktop padding-top exactly, so the top
+           of "Brain Games" lines up with the top of the hero paragraph.
+           Bottom padding is 0.75x that, so the list sits a bit further
+           down toward the bottom of the card. */
+        padding: 9rem 2.5rem 6.75rem;
+      }
+    }
+
+    .games-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .games-header {
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 14px;
+      line-height: 1.3;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      text-align: left;
+    }
+    @media (min-width: 651px) {
+      .games-header {
+        /* Compensates for .hero-lead's much larger line-height (1.7 vs
+           1.3), which pushes its visible glyphs down further within
+           its own line box than games-header's tighter line-height
+           does — without this nudge the two titles' padding-top
+           matches but their visible text doesn't. */
+        margin-top: 4px;
+      }
+    }
+
+    .games-header .tm {
+      font-size: 1.5em;
+      display: inline-block;
+      vertical-align: top;
+      line-height: 1;
+      margin-left: 3px;
+      text-transform: none;
+    }
+
+    /* Sits centered in the gap between the section header and the game
+       list — a third flex child alongside them, so justify-content:
+       space-between on .games-inner naturally centers it in whatever
+       space remains between the two. Works the same on phone and PC. */
+    .games-hero {
+      margin: 0;
+      text-align: center;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    /* Forces a break after "games" / before "reimagined" on phone
+       portrait only; on PC the sentence runs as a single line. */
+    .hero-linebreak {
+      display: none;
+    }
+    @media (max-width: 650px) {
+      .hero-linebreak {
+        display: block;
+      }
+    }
+
+    .games-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(33, 29, 29, 0.25);
+    }
+    @media (min-width: 651px) {
+      .games-list { margin-top: 0; }
+    }
+
+    .games-list-item {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(33, 29, 29, 0.25);
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 15px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .games-list-item:hover {
+      opacity: 0.7;
+    }
+
+    /* "Game 01" / "Game 02" labels switch to owners-text; the values
+       (Word Search, Buzzword) stay in gemeli mono like the rest of the
+       list. Size/spacing/case stay identical between the two. */
+    .games-list-label {
+      font-family: var(--font-body);
+      font-size: 14.5px;
+    }
+
+    /* ── Third card: page footer, in the About page's phone-mode format ── */
+    .cream-card--blank {
+      background: var(--bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 3.5rem 1.5rem 3.5rem;
+    }
+    @media (min-width: 651px) {
+      .cream-card--blank {
+        /* Matches the other two cards' desktop padding. */
+        padding: 9rem 2.5rem 6.75rem;
+      }
+    }
+
+    /* Phone only — matches the About page's .full-divider treatment
+       above its footer. The footer now follows it directly in normal
+       flow (not bottom-anchored), so the divider sits a small, fixed
+       distance from the top of the card, and the gap beneath it to the
+       footer content matches About.html's spacing exactly. Not shown
+       on PC at all. */
+    .footer-divider-mobile {
+      display: none;
+    }
+    @media (max-width: 650px) {
+      .cream-card--blank {
+        justify-content: flex-start;
+        padding-top: 0;
+        /* Matches About.html's body padding-bottom (5rem) — the space
+           below the footer content, no longer forced to a taller
+           height by the card-matching script (see JS below). */
+        padding-bottom: 5rem;
+      }
+      .footer-divider-mobile {
+        display: block;
+        margin-top: 2cm;
+        /* Cancels the card's own 1.5rem left/right padding so the line
+           reaches the true edges of the page, not just the card's
+           content box. */
+        margin-left: -1.5rem;
+        margin-right: -1.5rem;
+        border-top: 0.5px solid var(--border);
+      }
+    }
+
+    /* Footer grid: same 2-column, stacked format used on the About
+       page's phone layout — description + copyright span the full
+       width, Contact and Services sit side by side underneath. */
+    .site-footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 1rem;
+      row-gap: 1.75rem;
+      align-items: start;
+    }
+    @media (max-width: 650px) {
+      .site-footer {
+        /* Matches About.html's gap under its divider exactly:
+           .site-footer's own margin-top(1rem) + padding-top(1.5rem). */
+        margin-top: 2.5rem;
+      }
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      align-self: start;
+    }
+    .footer-col:first-child {
+      grid-column: 1 / -1;
+    }
+
+    /* Desktop only: the description + copyright move up and out of the
+       bottom-anchored footer grid, pinned instead to the top of the
+       card so their top edge lines up with the top of the hero
+       paragraph — same reference point (9rem) used for "Brain Games"
+       earlier. Contact/Services stay put at the bottom. */
+    @media (min-width: 651px) {
+      .footer-col:first-child {
+        position: absolute;
+        top: 9rem;
+        left: 2.5rem;
+        right: 2.5rem;
+      }
+    }
+
+    .footer-desc {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 0.9rem;
+    }
+    @media (min-width: 651px) {
+      .footer-desc {
+        /* Compensates for .hero-lead's taller line-height (1.7 vs 1.5
+           here), same trick used for the games-header nudge. */
+        margin-top: 2px;
+      }
+    }
+
+    .footer-copyright {
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 12px;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+
+    .footer-heading {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 0.7rem;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .footer-links a {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 13px;
+      color: var(--text);
+      text-decoration: underline;
+      white-space: normal;
+    }
+
+    .footer-col--services .footer-links a {
+      text-transform: uppercase;
+    }
+
+    /* Desktop only: nudge "Contact" right, roughly halfway toward
+       "Services" — Services itself stays exactly where it was. */
+    @media (min-width: 651px) {
+      .footer-col--contact {
+        margin-left: 9.5rem;
+      }
+    }
+
+    /* ── Header (overlaid, no divider, positions unchanged) ── */
+    .header-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      padding: 1.6rem 1.5rem 0;
+    }
+    @media (min-width: 721px) {
+      .header-wrap {
+        padding: 2.25rem 2.5rem 0;
+      }
+    }
+
+    .site-header {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      gap: 43px;
+      position: relative;
+    }
+
+    .site-name {
+      font-family: "all-round-gothic", sans-serif;
+      font-weight: 400;
+      font-size: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0px;
+      color: var(--text);
       text-decoration: none;
     }
 
-    .logo {
-      max-width: 220px;
-      height: auto;
+    /* Hamburger — recoloured to the standard bg colour so it reads
+       against the wine panel underneath it */
+    .menu-btn-wrap { position: relative; }
+    .menu-btn {
+      position: relative;
+      width: 22px;
+      height: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .menu-btn span {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--bg);
+      transition: transform 0.25s ease, top 0.25s ease;
+    }
+    .menu-btn span:first-child { top: 1.75px; }
+    .menu-btn span:last-child { top: 12.25px; }
+    .menu-btn.open span { height: 1.8px; }
+    .menu-btn.open span:first-child { top: 7px; transform: rotate(45deg); }
+    .menu-btn.open span:last-child { top: 7px; transform: rotate(-45deg); }
+
+    .menu-accordion {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 0.75rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+    }
+    .menu-accordion.open { max-height: 220px; }
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .menu-list a {
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--bg);
+      text-decoration: none;
+      padding: 0.5rem 0;
+      white-space: nowrap;
+    }
+    .menu-list a.active {
+      color: rgba(250, 251, 227, 0.45);
+      pointer-events: none;
+      cursor: default;
+    }
+    .menu-list a.menu-link--disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: default;
     }
 
-    .play-mark {
-      height: 52px;
-      width: auto;
+    /* ── CD + player, right panel ── */
+    .music-stack {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3.0625rem;
+      margin-top: 2rem;
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
+    /* CD aligns to the right edge of the player below it — since
+       .music-stack shrink-wraps to its widest child (the player, which
+       is wider than the CD), aligning the CD to the flex column's own
+       end edge lines it up with the player's right edge.
+
+       "Curated Sounds" is anchored to .music-stack itself (not the CD),
+       at left:0 — which is the player's left edge, since .music-stack
+       shrink-wraps to the player's width. Its vertical position is
+       tied to the CD's own height at each breakpoint, so it stays
+       centered on the CD regardless of where the CD sits horizontally. */
+    .music-heading {
+      position: absolute;
+      left: 0;
+      top: calc(min(384px, 62vw) / 2);
+      transform: translateY(-50%) rotate(180deg);
+      writing-mode: vertical-rl;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    /* A single unbroken rule standing in for "———" (3 em dashes), since
+       repeated dash characters were creating a break opportunity and
+       wrapping inside the vertical heading. Same overall length as 4
+       em dashes, same stroke weight as one normal em dash glyph. */
+    .em-rule {
+      display: inline-block;
+      width: 1px;
+      height: 4em;
+      background: currentColor;
+      vertical-align: 0em;
+    }
+
+    .cd-stack {
+      align-self: flex-end;
+      position: relative;
+      width: min(384px, 62vw);
+      height: min(384px, 62vw);
+    }
+
+    .cd-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(0deg);
+      opacity: 0.45;
+      pointer-events: none;
+      user-select: none;
+    }
+    .cd-image--spin {
+      animation: spin-cd 9s linear infinite;
+      animation-play-state: paused;
+    }
+    .cd-image--spin.playing {
+      animation-play-state: running;
+    }
+
+    @media (min-width: 651px) {
+      .music-stack {
+        margin-top: 8rem;
+        padding-bottom: 6.125rem;
+      }
+      .music-heading {
+        top: calc(min(276px, 44.6vw) / 2);
+      }
+      .cd-stack {
+        /* 0.9x the original 307px / 49.6vw */
+        width: min(276px, 44.6vw);
+        height: min(276px, 44.6vw);
+      }
+    }
+
+    @keyframes spin-cd {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .player-wrap {
+      position: relative;
+      z-index: 2;
+      width: min(380px, 84vw);
+    }
+
+    /* ── Small screens: stack panels, page scrolls, logo turns white ── */
+    @media (max-width: 650px) {
+      html, body {
+        height: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
       }
 
-      to {
-        opacity: 1;
+      .viewfinder {
+        position: static;
+        display: grid;
+        width: 100%;
+        height: auto;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto auto auto auto auto;
+        grid-template-areas:
+          "top"
+          "right"
+          "bottom"
+          "games"
+          "blank";
+      }
+
+      .wine-block--top {
+        height: auto;
+        min-height: 30vh;
+      }
+      .wine-block--bottom {
+        height: auto;
+        min-height: 18vh;
+      }
+      /* Unwrap the card-snap scroller on mobile: its cards become
+         independent grid items, stacked vertically in normal order. */
+      .cream-col {
+        display: contents;
+      }
+      .cream-viewport {
+        display: contents;
+      }
+      .cream-track {
+        display: contents;
+      }
+      .cream-snap-top,
+      .cream-snap-spacer {
+        display: none;
+      }
+      .cream-card {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        scroll-snap-align: none;
+      }
+      .cream-card--music {
+        grid-area: right;
+        min-height: 70vh;
+        padding-bottom: 7rem;
+      }
+      .cream-card--games {
+        grid-area: games;
+        /* Same length as the music card above it (JS enforces exact
+           equality below; this is the layout default before JS runs).
+           Bottom padding matches top padding, per the desktop card. */
+        min-height: 70vh;
+        padding: 3.5rem 1.5rem 3.5rem;
+      }
+      .cream-card--blank {
+        grid-area: blank;
+        /* No forced min-height: sizes to its own content, per the
+           About.html-matched spacing above. */
+      }
+
+      .music-stack {
+        margin-top: 8rem;
+      }
+
+      /* header overlays the wine band at the top on mobile, so both
+         the hamburger and the logo need to read against wine */
+      .site-name { color: var(--bg); }
+
+      /* fixed to the top section itself (scrolls away with it), rather
+         than pinned to the viewport for the whole page — matches the
+         original reference page's header behaviour */
+      .header-wrap {
+        position: absolute;
+      }
+    }
+
+    /* ── Landscape block: phones only ──
+       Mirrors the Thoughtline lightbox's visual formatting exactly —
+       same dark wine overlay at 95% opacity, same gemeli-mono uppercase
+       heading treatment, same owners-text body copy. Targets phones in
+       landscape specifically (max-height:500px catches phone landscape
+       heights while leaving tablets/laptops in landscape untouched). No
+       close button — it's not a dismissible dialog, it just disappears
+       on its own once the device is rotated back to portrait. */
+    .landscape-block {
+      display: none;
+    }
+    @media (orientation: landscape) and (max-height: 500px) {
+      .landscape-block {
+        display: flex;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(23, 0, 6, 0.95);
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px 40px;
+      }
+      .landscape-block-inner {
+        max-width: 420px;
+      }
+      .landscape-block-heading {
+        font-family: var(--font-mono);
+        font-weight: 300;
+        font-size: 19px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--bg);
+        margin: 0 0 16px 0;
+      }
+      .landscape-block-copy {
+        font-family: var(--font-body);
+        font-weight: 300;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--bg);
+        margin: 0;
       }
     }
   </style>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-9ZHK592471"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-9ZHK592471');
-</script>
-  <script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "xxr0mg59uq");
-</script>
 </head>
-
 <body>
-  <div class="lockup">
-    <a href="https://play.sabi.london/word-search/" aria-label="SABI Play - Word Search">
-      <img class="logo" src="sabi-logo.png" alt="SABI">
-      <img class="play-mark" src="favicon-play.png" alt="Play">
-    </a>
+
+  <div class="landscape-block" role="dialog" aria-label="Rotate device">
+    <div class="landscape-block-inner">
+      <p class="landscape-block-heading">Portrait Only</p>
+      <p class="landscape-block-copy">This page is portrait only. Turn your phone back around to enter</p>
+    </div>
   </div>
+
+  <div class="viewfinder">
+    <div class="wine-block wine-block--top">
+      <div class="hero-text">
+        <p class="hero-lead">A space for ideas and distractions.<br>Take a seat while you wait.</p>
+      </div>
+    </div>
+    <div class="cream-col" id="creamCol">
+      <span class="cream-snap-top" aria-hidden="true"></span>
+      <div class="cream-viewport">
+        <div class="cream-track" id="creamTrack">
+          <div class="cream-card cream-card--music">
+            <div class="music-stack">
+              <span class="music-heading">Curated Sounds <span class="em-rule"></span> Autumn 2026</span>
+              <div class="cd-stack">
+                <img src="blank_CD.png" alt="" class="cd-image cd-image--spin" id="cdImage" />
+              </div>
+              <div class="player-wrap">
+                <div id="spotify-embed"></div>
+              </div>
+            </div>
+          </div>
+          <div class="cream-card cream-card--games">
+            <div class="games-inner">
+              <div class="games-header">
+                <span>Brain Games</span>
+                <span>Off Paper<sup class="tm">&trade;</sup></span>
+              </div>
+              <p class="games-hero">Newspaper style games <br class="hero-linebreak">reimagined for brand people.</p>
+              <ul class="games-list">
+                <li>
+                  <a class="games-list-item" href="https://play.sabi.london/word-search" target="_blank" rel="noopener noreferrer">
+                    <span class="games-list-label">Game 01</span>
+                    <span class="games-list-value">Word Search</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="games-list-item" href="https://play.sabi.london/buzzword" target="_blank" rel="noopener noreferrer">
+                    <span class="games-list-label">Game 02</span>
+                    <span class="games-list-value">Buzzword</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="cream-card cream-card--blank">
+            <div class="footer-divider-mobile" aria-hidden="true"></div>
+            <footer class="site-footer">
+              <div class="footer-col">
+                <p class="footer-desc">A creative consultancy offering strategy and design<br>for culture-shaping presence and storytelling.</p>
+                <p class="footer-copyright">© 2026 SABI London</p>
+              </div>
+
+              <div class="footer-col footer-col--contact">
+                <p class="footer-heading">Contact</p>
+                <div class="footer-links">
+                  <a href="mailto:office@sabi.london" target="_blank" rel="noopener">office@sabi.london</a>
+                  <a href="tel:+447400192837">+44 7400 192837</a>
+                  <a href="https://calendar.app.google/itHV85cwLfoDmH7x5">OOO Hours</a>
+                </div>
+              </div>
+
+              <div class="footer-col footer-col--services">
+                <p class="footer-heading">Services</p>
+                <div class="footer-links">
+                  <a href="https://sabi.london/services/brand-strategy/">Brand Strategy</a>
+                  <a href="https://sabi.london/services/world-building/">World Building</a>
+                  <a href="https://sabi.london/services/copy/">Copy</a>
+                  <a href="https://sabi.london/services/community-and-partnerships/">Community &amp; Partnerships</a>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+      <div class="cream-snap-spacer" aria-hidden="true"></div>
+      <div class="cream-snap-spacer" aria-hidden="true"></div>
+    </div>
+    <div class="wine-block wine-block--bottom">
+      <div class="clocks-wrap">
+        <div class="weather-reel" id="weatherReel">
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>L</span><span>o</span><span>n</span><span>d</span><span>o</span><span>n</span></span></span>
+            <span class="wr-city-time" id="clock-London"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-London"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>N</span><span>e</span><span>w</span><span>&nbsp;</span><span>Y</span><span>o</span><span>r</span><span>k</span></span></span>
+            <span class="wr-city-time" id="clock-New York"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-New York"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>P</span><span>a</span><span>r</span><span>i</span><span>s</span></span></span>
+            <span class="wr-city-time" id="clock-Paris"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Paris"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>T</span><span>o</span><span>k</span><span>y</span><span>o</span></span></span>
+            <span class="wr-city-time" id="clock-Tokyo"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Tokyo"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>M</span><span>i</span><span>l</span><span>a</span><span>n</span></span></span>
+            <span class="wr-city-time" id="clock-Milan"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Milan"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>L</span><span>o</span><span>s</span><span>&nbsp;</span><span>A</span><span>n</span><span>g</span><span>e</span><span>l</span><span>e</span><span>s</span></span></span>
+            <span class="wr-city-time" id="clock-Los Angeles"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Los Angeles"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>S</span><span>e</span><span>o</span><span>u</span><span>l</span></span></span>
+            <span class="wr-city-time" id="clock-Seoul"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Seoul"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>C</span><span>o</span><span>p</span><span>e</span><span>n</span><span>h</span><span>a</span><span>g</span><span>e</span><span>n</span></span></span>
+            <span class="wr-city-time" id="clock-Copenhagen"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Copenhagen"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>B</span><span>e</span><span>r</span><span>l</span><span>i</span><span>n</span></span></span>
+            <span class="wr-city-time" id="clock-Berlin"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Berlin"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+          </div>
+        </div>
+        <div class="weather-scrollbar-hit" id="weatherScrollbarTrack">
+          <div class="weather-scrollbar-track">
+            <div class="weather-scrollbar-thumb" id="weatherScrollbarThumb"></div>
+          </div>
+        </div>
+        <div class="weather-tagline">
+          <span>All the good ideas are outside</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-wrap">
+    <header class="site-header">
+      <div class="menu-btn-wrap">
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+        </button>
+        <nav class="menu-accordion" id="menuAccordion">
+          <div class="menu-list">
+            <a href="https://sabi.london/about/">About</a>
+            <a href="https://sabi.london/services/">Services</a>
+            <a href="https://play.sabi.london/word-search/" class="menu-link--disabled" aria-disabled="true" tabindex="-1">Play</a>
+          </div>
+        </nav>
+      </div>
+      <a href="https://sabi.london/" class="site-name">S A B I</a>
+    </header>
+  </div>
+
+  <script>
+    const menuBtn = document.getElementById('menuBtn');
+    const menuAccordion = document.getElementById('menuAccordion');
+    const heroText = document.querySelector('.hero-text');
+    const clocksWrap = document.querySelector('.clocks-wrap');
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menuAccordion.classList.toggle('open');
+      menuBtn.classList.toggle('open', isOpen);
+      menuBtn.setAttribute('aria-expanded', isOpen);
+
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+      const offset = menuAccordion.scrollHeight;
+
+      if (isDesktop) {
+        // Transform-only, and only on the hero copy: transform never
+        // grows the grid row or clips content, and there's already a
+        // natural gap between the hero paragraph and the weather reel
+        // (which sits flush against the bottom of its own row), so the
+        // reel doesn't need to move too — doing so was pushing it off
+        // the bottom of the viewport entirely, since it had nowhere
+        // left to go.
+        const shift = isOpen ? `translateY(${offset}px)` : 'translateY(0)';
+        if (heroText) {
+          heroText.style.transform = shift;
+          heroText.style.marginTop = '0px';
+        }
+        if (clocksWrap) {
+          clocksWrap.style.transform = '';
+        }
+      } else {
+        if (heroText) {
+          heroText.style.marginTop = isOpen ? offset + 'px' : '0px';
+          heroText.style.transform = '';
+        }
+        if (clocksWrap) {
+          clocksWrap.style.transform = '';
+        }
+      }
+    });
+  </script>
+
+  <!-- ── World clocks + weather ── -->
+  <script>
+    const WR_ICONS = {
+      clear: 'clear',
+      moon: 'moon',
+      partlyCloudy: 'partlyCloudy',
+      partlyCloudyNight: 'partlyCloudyNight',
+      cloud: 'cloud',
+      fog: 'fog',
+      rain: 'rain',
+      snow: 'snow',
+      storm: 'storm'
+    };
+
+    function wrIconForCode(code, isDay) {
+      if (code === 0) return isDay ? WR_ICONS.clear : WR_ICONS.moon;
+      if ([1, 2].includes(code)) return isDay ? WR_ICONS.partlyCloudy : WR_ICONS.partlyCloudyNight;
+      if (code === 3) return WR_ICONS.cloud;
+      if ([45, 48].includes(code)) return WR_ICONS.fog;
+      if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return WR_ICONS.rain;
+      if ([71, 73, 75, 77, 85, 86].includes(code)) return WR_ICONS.snow;
+      if ([95, 96, 99].includes(code)) return WR_ICONS.storm;
+      return WR_ICONS.cloud;
+    }
+
+    const WR_CITIES = [
+      { id: 'London', lat: 51.5074, lon: -0.1278, tz: 'Europe/London' },
+      { id: 'New York', lat: 40.7128, lon: -74.0060, tz: 'America/New_York' },
+      { id: 'Paris', lat: 48.8566, lon: 2.3522, tz: 'Europe/Paris' },
+      { id: 'Tokyo', lat: 35.6762, lon: 139.6503, tz: 'Asia/Tokyo' },
+      { id: 'Milan', lat: 45.4642, lon: 9.1900, tz: 'Europe/Rome' },
+      { id: 'Los Angeles', lat: 34.0522, lon: -118.2437, tz: 'America/Los_Angeles' },
+      { id: 'Seoul', lat: 37.5665, lon: 126.9780, tz: 'Asia/Seoul' },
+      { id: 'Copenhagen', lat: 55.6761, lon: 12.5683, tz: 'Europe/Copenhagen' },
+      { id: 'Berlin', lat: 52.5200, lon: 13.4050, tz: 'Europe/Berlin' }
+    ];
+
+    function wrUpdateClock(city) {
+      const timeCell = document.getElementById('clock-' + city.id);
+      if (!timeCell) return;
+      const timeStr = new Date().toLocaleTimeString('en-GB', {
+        timeZone: city.tz,
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      const [hh, mm] = timeStr.split(':');
+      timeCell.querySelector('[data-h1]').textContent = hh[0];
+      timeCell.querySelector('[data-h2]').textContent = hh[1];
+      timeCell.querySelector('[data-m1]').textContent = mm[0];
+      timeCell.querySelector('[data-m2]').textContent = mm[1];
+    }
+
+    async function wrUpdateWeather(city) {
+      const weatherCell = document.getElementById('weather-' + city.id);
+      if (!weatherCell) return;
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code,is_day`);
+        const data = await res.json();
+        const temp = Math.round(data.current.temperature_2m);
+        const code = data.current.weather_code;
+        const isDay = data.current.is_day === 1;
+        weatherCell.querySelector('[data-temp]').textContent = `${temp}°C`;
+        const iconName = wrIconForCode(code, isDay);
+        weatherCell.querySelector('[data-icon]').innerHTML =
+          `<img src="/icons-cream/${iconName}.png" alt="" width="256" height="256" onerror="this.style.display='none'">`;
+      } catch (e) {
+        weatherCell.querySelector('[data-temp]').textContent = '—';
+      }
+    }
+
+    // Measure natural (unconstrained) content width of a space-between
+    // flex row — temporarily switch it to shrink-to-fit so we get its
+    // real minimum width instead of whatever width we last gave it.
+    function wrNaturalWidth(el) {
+      if (!el) return 0;
+      const prevDisplay = el.style.display;
+      const prevWidth = el.style.width;
+      const prevJustify = el.style.justifyContent;
+      el.style.display = 'inline-flex';
+      el.style.width = 'auto';
+      el.style.justifyContent = 'flex-start';
+      const width = el.getBoundingClientRect().width;
+      el.style.display = prevDisplay;
+      el.style.width = prevWidth;
+      el.style.justifyContent = prevJustify;
+      return width;
+    }
+
+    // Card width is driven by the TIME row's natural content width (plus
+    // weather as a safety floor) — NOT the city name. Because both
+    // .wr-city-inner and .wr-time-inner use width:100% + space-between,
+    // the city name automatically stretches to match this exact same
+    // width; they're locked together by construction, so they always
+    // align, and narrowing the time row narrows the whole card.
+    function matchWrBlockWidths() {
+      const blocks = document.querySelectorAll('.wr-block');
+      const reel = document.getElementById('weatherReel');
+      if (!blocks.length || !reel) return;
+
+      let naturalMax = 0;
+      blocks.forEach((block) => {
+        const nameInner = block.querySelector('.wr-city-inner');
+        const timeInner = block.querySelector('.wr-time-inner');
+        const weatherEl = block.querySelector('.wr-city-weather');
+        const w = Math.max(
+          wrNaturalWidth(nameInner),
+          wrNaturalWidth(timeInner),
+          wrNaturalWidth(weatherEl)
+        );
+        if (w > naturalMax) naturalMax = w;
+      });
+      const cardWidth = Math.ceil(naturalMax) + 24.5; // covers the block's own left/right padding + a bit of extra breathing room
+      blocks.forEach((block) => {
+        block.style.width = cardWidth + 'px';
+      });
+
+      // Reset gap to measure the reel's true available width first,
+      // then solve for the gap that spaces exactly N cards across it.
+      reel.style.gap = '0px';
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+      const visibleCount = isDesktop ? 5 : 3;
+      const availableWidth = reel.clientWidth;
+      const minGap = 16;
+      const rawGap = (availableWidth - visibleCount * cardWidth) / (visibleCount - 1);
+      const gap = Math.max(minGap, rawGap);
+      reel.style.gap = gap + 'px';
+
+      wrUpdateThumb();
+    }
+
+    async function wrInit() {
+      const weatherPromises = WR_CITIES.map((city) => {
+        wrUpdateClock(city);
+        setInterval(() => wrUpdateClock(city), 1000);
+        return wrUpdateWeather(city).then(() => {
+          setInterval(() => wrUpdateWeather(city), 5 * 60 * 1000);
+        });
+      });
+      await Promise.all(weatherPromises);
+      matchWrBlockWidths();
+      document.getElementById('weatherReel').classList.add('is-ready');
+    }
+
+    wrInit();
+    window.addEventListener('resize', matchWrBlockWidths);
+  </script>
+
+  <!-- ── Weather reel: custom scrollbar (Typeform-style progress bar) ── -->
+  <script>
+    const wrReel = document.getElementById('weatherReel');
+    const wrTrack = document.getElementById('weatherScrollbarTrack');
+    const wrThumb = document.getElementById('weatherScrollbarThumb');
+
+    function wrMaxScroll() {
+      return Math.max(0, wrReel.scrollWidth - wrReel.clientWidth);
+    }
+
+    function wrUpdateThumb() {
+      const max = wrMaxScroll();
+      // Thumb width mirrors how much of the reel is visible at once
+      // (e.g. 5 of 9 blocks visible → thumb covers 5/9 of the track).
+      const widthRatio = Math.min(1, wrReel.clientWidth / wrReel.scrollWidth);
+      const widthPct = widthRatio * 100;
+      wrThumb.style.width = widthPct + '%';
+
+      const scrollRatio = max > 0 ? wrReel.scrollLeft / max : 0;
+      const trackWidth = wrTrack.clientWidth;
+      const thumbWidthPx = (widthPct / 100) * trackWidth;
+      const maxThumbLeft = trackWidth - thumbWidthPx;
+      wrThumb.style.left = (scrollRatio * maxThumbLeft) + 'px';
+    }
+
+    function wrScrollToRatio(ratio) {
+      const max = wrMaxScroll();
+      wrReel.scrollLeft = Math.min(max, Math.max(0, ratio * max));
+    }
+
+    function wrRatioFromClientX(clientX) {
+      const rect = wrTrack.getBoundingClientRect();
+      const thumbWidthPx = wrThumb.getBoundingClientRect().width;
+      const usable = Math.max(1, rect.width - thumbWidthPx);
+      const x = clientX - rect.left - thumbWidthPx / 2;
+      return Math.min(1, Math.max(0, x / usable));
+    }
+
+    let wrDragging = false;
+
+    wrTrack.addEventListener('pointerdown', (e) => {
+      wrDragging = true;
+      wrTrack.setPointerCapture(e.pointerId);
+      wrReel.style.scrollBehavior = 'auto';
+      wrScrollToRatio(wrRatioFromClientX(e.clientX));
+    });
+    wrTrack.addEventListener('pointermove', (e) => {
+      if (!wrDragging) return;
+      wrScrollToRatio(wrRatioFromClientX(e.clientX));
+    });
+    wrTrack.addEventListener('pointerup', (e) => {
+      wrDragging = false;
+      wrTrack.releasePointerCapture(e.pointerId);
+      wrReel.style.scrollBehavior = 'smooth';
+    });
+    wrTrack.addEventListener('pointercancel', () => {
+      wrDragging = false;
+      wrReel.style.scrollBehavior = 'smooth';
+    });
+
+    wrReel.addEventListener('scroll', wrUpdateThumb);
+    window.addEventListener('resize', wrUpdateThumb);
+    wrUpdateThumb();
+  </script>
+
+  <!-- ── Spotify IFrame API: syncs CD spin to actual playback state ── -->
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+  <script>
+    window.onSpotifyIframeApiReady = (IFrameAPI) => {
+      const element = document.getElementById('spotify-embed');
+      const cdImage = document.getElementById('cdImage');
+
+      const options = {
+        uri: 'spotify:playlist:0XXOJH57JlfsukZGkiRdKz',
+        width: '100%',
+        height: '152'
+      };
+
+      const callback = (EmbedController) => {
+        EmbedController.addListener('playback_update', (e) => {
+          if (e.data.isPaused) {
+            cdImage.classList.remove('playing');
+          } else {
+            cdImage.classList.add('playing');
+          }
+        });
+      };
+
+      IFrameAPI.createController(element, options, callback);
+    };
+  </script>
+  <!-- ── Cream cards: force music, Brain Games & blank sections to match height on phone ── -->
+  <script>
+    function matchCreamCardHeights() {
+      const musicCard = document.querySelector('.cream-card--music');
+      const gamesCard = document.querySelector('.cream-card--games');
+      const blankCard = document.querySelector('.cream-card--blank');
+      if (!musicCard || !gamesCard || !blankCard) return;
+
+      const isMobile = window.matchMedia('(max-width: 650px)').matches;
+      if (!isMobile) {
+        musicCard.style.height = '';
+        gamesCard.style.height = '';
+        blankCard.style.height = '';
+        return;
+      }
+
+      // Reset to auto first so we measure each card's true natural
+      // height (top to bottom, padding and content included), not a
+      // stale height left over from a previous measurement.
+      musicCard.style.height = 'auto';
+      gamesCard.style.height = 'auto';
+      // The footer card is intentionally left out of this — it sizes
+      // to its own content (divider gap + footer + the 5rem bottom
+      // padding matching About.html), not stretched to match the
+      // other two sections.
+      blankCard.style.height = '';
+
+      const tallest = Math.max(
+        musicCard.getBoundingClientRect().height,
+        gamesCard.getBoundingClientRect().height
+      );
+
+      musicCard.style.height = tallest + 'px';
+      gamesCard.style.height = tallest + 'px';
+    }
+
+    window.addEventListener('load', matchCreamCardHeights);
+    window.addEventListener('resize', matchCreamCardHeights);
+  </script>
+
+  <!-- ── Cream column: vertical scroll drives an L-shaped card slide (PC only) ──
+       Music → Brain Games slides horizontally; Brain Games → blank card
+       slides vertically. Scroll interaction itself is always vertical. ── -->
+  <script>
+    (function () {
+      const creamCol = document.getElementById('creamCol');
+      const creamTrack = document.getElementById('creamTrack');
+      if (!creamCol || !creamTrack) return;
+
+      function updateCreamTrack() {
+        const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+        if (!isDesktop) {
+          creamTrack.style.transform = '';
+          return;
+        }
+        const pageHeight = creamCol.clientHeight;
+        // 0 = music card, 1 = games card, 2 = blank card.
+        const pageFloat = pageHeight > 0
+          ? Math.min(2, Math.max(0, creamCol.scrollTop / pageHeight))
+          : 0;
+        const xProgress = Math.min(1, pageFloat);           // music → games
+        const yProgress = Math.max(0, Math.min(1, pageFloat - 1)); // games → blank
+        creamTrack.style.transform = `translate(-${xProgress * 50}%, -${yProgress * 50}%)`;
+      }
+
+      creamCol.addEventListener('scroll', updateCreamTrack, { passive: true });
+      window.addEventListener('resize', updateCreamTrack);
+      updateCreamTrack();
+    })();
+  </script>
+
 </body>
 </html>
