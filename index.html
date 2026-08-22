@@ -347,16 +347,6 @@
       overflow-x: hidden;
       scroll-behavior: smooth;
       scroll-snap-type: y mandatory;
-      /* Hidden but still functional — a visible native scrollbar here
-         reserves real width on most browsers, which shrinks this
-         column's content area from the right and throws off alignment
-         with the fixed-position header (which spans the full viewport
-         and isn't affected by this column's own scrollbar). */
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    .cream-col::-webkit-scrollbar {
-      display: none;
     }
 
     /* Pinned window onto the horizontal track: stays put at the top of
@@ -704,7 +694,7 @@
     }
     @media (min-width: 651px) {
       .header-wrap {
-        padding: 2.25rem 2.5rem 0;
+        padding: 2.25rem calc(2.5rem + var(--scrollbar-w, 0px)) 0 2.5rem;
       }
     }
 
@@ -1547,6 +1537,27 @@
       window.addEventListener('resize', updateCreamTrack);
       updateCreamTrack();
     })();
+  </script>
+
+  <!-- ── Keep the header's right edge aligned with the cream column's
+       content edge, even though .cream-col has a real, visible scrollbar.
+       A visible scrollbar reserves actual width inside .cream-col,
+       shrinking its content from the right — but the header is
+       position:fixed and spans the full viewport, so it's untouched by
+       that. Rather than hiding the scrollbar (which removes the visual
+       scroll cue entirely), we measure the scrollbar's real width and
+       add that same amount to the header's right padding, so the logo
+       shifts left to meet the content edge exactly, on any browser/OS. ── -->
+  <script>
+    function wrSyncHeaderToScrollbar() {
+      const creamCol = document.querySelector('.cream-col');
+      const headerWrap = document.querySelector('.header-wrap');
+      if (!creamCol || !headerWrap) return;
+      const scrollbarWidth = creamCol.offsetWidth - creamCol.clientWidth;
+      headerWrap.style.setProperty('--scrollbar-w', scrollbarWidth + 'px');
+    }
+    window.addEventListener('load', wrSyncHeaderToScrollbar);
+    window.addEventListener('resize', wrSyncHeaderToScrollbar);
   </script>
 
 </body>
