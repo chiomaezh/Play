@@ -206,7 +206,7 @@
     /* Error state: retry button + "RELOAD / WEATHER" label pushed to the
        right edge of the cell, both bottom-aligned with each other. */
     .wr-city-weather.is-error {
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: flex-end;
     }
     .wr-city-weather.is-error [data-icon] {
@@ -220,7 +220,7 @@
       flex-direction: column;
       font-family: var(--font-mono);
       font-weight: 300;
-      font-size: 9px;
+      font-size: 10px;
       line-height: 1.15;
       letter-spacing: 0.5px;
       text-transform: uppercase;
@@ -230,7 +230,6 @@
     }
     .wr-city-weather.is-error .wr-refresh-text {
       display: flex;
-      margin-right: 6px;
     }
     .wr-icon {
       display: inline-block;
