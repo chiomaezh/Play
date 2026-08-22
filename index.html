@@ -203,6 +203,35 @@
       color: var(--bg);
       white-space: nowrap;
     }
+    /* Error state: retry button + "RELOAD / WEATHER" label pushed to the
+       right edge of the cell, both bottom-aligned with each other. */
+    .wr-city-weather.is-error {
+      justify-content: flex-end;
+      align-items: flex-end;
+    }
+    .wr-city-weather.is-error [data-icon] {
+      order: 2;
+    }
+    .wr-city-weather.is-error .wr-refresh-text {
+      order: 1;
+    }
+    .wr-refresh-text {
+      display: none;
+      flex-direction: column;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 9px;
+      line-height: 1.15;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-align: left;
+      color: var(--bg);
+      white-space: normal;
+    }
+    .wr-city-weather.is-error .wr-refresh-text {
+      display: flex;
+      margin-right: 6px;
+    }
     .wr-icon {
       display: inline-block;
       width: 25px;
@@ -1073,47 +1102,47 @@
           <div class="wr-block">
             <span class="wr-city-name"><span class="wr-city-inner"><span>L</span><span>o</span><span>n</span><span>d</span><span>o</span><span>n</span></span></span>
             <span class="wr-city-time" id="clock-London"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-London"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-London"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
           <div class="wr-block">
             <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>N</span><span>e</span><span>w</span><span>&nbsp;</span><span>Y</span><span>o</span><span>r</span><span>k</span></span></span>
             <span class="wr-city-time" id="clock-New York"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-New York"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-New York"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
           <div class="wr-block">
             <span class="wr-city-name"><span class="wr-city-inner"><span>P</span><span>a</span><span>r</span><span>i</span><span>s</span></span></span>
             <span class="wr-city-time" id="clock-Paris"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-Paris"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-Paris"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
           <div class="wr-block">
             <span class="wr-city-name"><span class="wr-city-inner"><span>T</span><span>o</span><span>k</span><span>y</span><span>o</span></span></span>
             <span class="wr-city-time" id="clock-Tokyo"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-Tokyo"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-Tokyo"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
           <div class="wr-block">
             <span class="wr-city-name"><span class="wr-city-inner"><span>M</span><span>i</span><span>l</span><span>a</span><span>n</span></span></span>
             <span class="wr-city-time" id="clock-Milan"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-Milan"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-Milan"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
           <div class="wr-block">
             <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>L</span><span>o</span><span>s</span><span>&nbsp;</span><span>A</span><span>n</span><span>g</span><span>e</span><span>l</span><span>e</span><span>s</span></span></span>
             <span class="wr-city-time" id="clock-Los Angeles"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-Los Angeles"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-Los Angeles"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
           <div class="wr-block">
             <span class="wr-city-name"><span class="wr-city-inner"><span>S</span><span>e</span><span>o</span><span>u</span><span>l</span></span></span>
             <span class="wr-city-time" id="clock-Seoul"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-Seoul"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-Seoul"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
           <div class="wr-block">
             <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>C</span><span>o</span><span>p</span><span>e</span><span>n</span><span>h</span><span>a</span><span>g</span><span>e</span><span>n</span></span></span>
             <span class="wr-city-time" id="clock-Copenhagen"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-Copenhagen"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-Copenhagen"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
           <div class="wr-block">
             <span class="wr-city-name"><span class="wr-city-inner"><span>B</span><span>e</span><span>r</span><span>l</span><span>i</span><span>n</span></span></span>
             <span class="wr-city-time" id="clock-Berlin"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
-            <span class="wr-city-weather" id="weather-Berlin"><span class="wr-icon" data-icon></span><span data-temp>--°C</span></span>
+            <span class="wr-city-weather" id="weather-Berlin"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>RELOAD<br>WEATHER</span></span>
           </div>
         </div>
         <div class="weather-scrollbar-hit" id="weatherScrollbarTrack">
@@ -1251,11 +1280,13 @@
         const temp = Math.round(data.current.temperature_2m);
         const code = data.current.weather_code;
         const isDay = data.current.is_day === 1;
+        weatherCell.classList.remove('is-error');
         weatherCell.querySelector('[data-temp]').textContent = `${temp}°C`;
         const iconName = wrIconForCode(code, isDay);
         weatherCell.querySelector('[data-icon]').innerHTML =
           `<img src="/icons-cream/${iconName}.png" alt="" width="256" height="256" onerror="this.style.display='none'">`;
       } catch (e) {
+        weatherCell.classList.add('is-error');
         weatherCell.querySelector('[data-temp]').textContent = '';
         weatherCell.querySelector('[data-icon]').innerHTML =
           `<button type="button" class="wr-refresh-btn" aria-label="Retry weather">
