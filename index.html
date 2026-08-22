@@ -19,7 +19,12 @@
       height: 100%;
       overflow: hidden;
       overscroll-behavior: none;
-      background-color: var(--wine);
+      /* The page starts wine (hero) and ends cream (footer), so any
+         overscroll bounce revealing this background should match
+         whichever edge it's happening at — wine at the top, cream at
+         the bottom — rather than a single flat color that was only
+         ever correct for the top. */
+      background: linear-gradient(to bottom, var(--wine), var(--bg));
     }
 
     html {
@@ -936,10 +941,9 @@
       .cream-card--games {
         grid-area: games;
         /* Same length as the music card above it (JS enforces exact
-           equality below; this is the layout default before JS runs).
-           Bottom padding matches top padding, per the desktop card. */
+           equality below; this is the layout default before JS runs). */
         min-height: 70vh;
-        padding: 3.5rem 1.5rem 3.5rem;
+        padding: 1.75rem 1.5rem 1.75rem;
       }
       .cream-card--blank {
         grid-area: blank;
