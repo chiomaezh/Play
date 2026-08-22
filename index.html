@@ -885,6 +885,20 @@
     @media (max-width: 650px) {
       html, body {
         height: auto;
+        /* height:auto lets the page grow with its content, but that
+           also means html/body's box — and the gradient painted on
+           it — is only ever exactly as tall as the content. When
+           Safari's address bar / bottom URL pill collapses on
+           scroll, the visible viewport briefly grows taller than
+           that box, leaving an unpainted (white) sliver at the top
+           and bottom that Safari's own chrome then samples and tints
+           white. Forcing a minimum of one full viewport (falling
+           back through vh → dvh → lvh, the tallest possible viewport
+           once the toolbar is collapsed) guarantees the gradient
+           always reaches those edges. */
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: 100lvh;
         overflow-y: auto;
         overflow-x: hidden;
       }
