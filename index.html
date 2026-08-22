@@ -347,6 +347,16 @@
       overflow-x: hidden;
       scroll-behavior: smooth;
       scroll-snap-type: y mandatory;
+      /* Hidden but still functional — a visible native scrollbar here
+         reserves real width on most browsers, which shrinks this
+         column's content area from the right and throws off alignment
+         with the fixed-position header (which spans the full viewport
+         and isn't affected by this column's own scrollbar). */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .cream-col::-webkit-scrollbar {
+      display: none;
     }
 
     /* Pinned window onto the horizontal track: stays put at the top of
