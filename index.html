@@ -19,12 +19,15 @@
       height: 100%;
       overflow: hidden;
       overscroll-behavior: none;
-      /* The page starts wine (hero) and ends cream (footer), so any
-         overscroll bounce revealing this background should match
-         whichever edge it's happening at — wine at the top, cream at
-         the bottom — rather than a single flat color that was only
-         ever correct for the top. */
-      background: linear-gradient(to bottom, var(--wine), var(--bg));
+      /* Safari's chrome-tinting (status bar, the bottom URL pill)
+         only reliably reads a flat background-color — a gradient
+         here doesn't get picked up and falls back to white. A solid
+         color still bleeds correctly at each edge because Safari
+         also samples the actual solid-colored sections underneath as
+         you scroll (wine hero at the top, cream footer card at the
+         bottom), so this alone is enough to get wine-top/cream-
+         bottom without needing a gradient. */
+      background-color: var(--wine);
     }
 
     html {
@@ -885,20 +888,6 @@
     @media (max-width: 650px) {
       html, body {
         height: auto;
-        /* height:auto lets the page grow with its content, but that
-           also means html/body's box — and the gradient painted on
-           it — is only ever exactly as tall as the content. When
-           Safari's address bar / bottom URL pill collapses on
-           scroll, the visible viewport briefly grows taller than
-           that box, leaving an unpainted (white) sliver at the top
-           and bottom that Safari's own chrome then samples and tints
-           white. Forcing a minimum of one full viewport (falling
-           back through vh → dvh → lvh, the tallest possible viewport
-           once the toolbar is collapsed) guarantees the gradient
-           always reaches those edges. */
-        min-height: 100vh;
-        min-height: 100dvh;
-        min-height: 100lvh;
         overflow-y: auto;
         overflow-x: hidden;
       }
