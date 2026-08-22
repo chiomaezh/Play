@@ -1567,5 +1567,34 @@
     window.addEventListener('resize', wrSyncHeaderToScrollbar);
   </script>
 
+  <script>
+    /* Safari's chrome-tinting (status bar, bottom URL pill) only reads
+       a static background-color on html/body — it never updates on
+       its own as the page scrolls. This swaps that color to cream once
+       the footer card is reached, and back to wine once it's scrolled
+       out of view, so the phone's chrome matches whichever end of the
+       page is on screen. Desktop doesn't scroll the page itself, so
+       this is a no-op there. */
+    (function () {
+      const footer = document.querySelector('.cream-card--blank');
+      if (!footer || !('IntersectionObserver' in window)) return;
+
+      const wine = getComputedStyle(document.documentElement).getPropertyValue('--wine').trim();
+      const cream = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const isFooterVisible = entries[0].isIntersecting;
+          const color = isFooterVisible ? cream : wine;
+          document.documentElement.style.backgroundColor = color;
+          document.body.style.backgroundColor = color;
+        },
+        { threshold: 0.15 }
+      );
+
+      observer.observe(footer);
+    })();
+  </script>
+
 </body>
 </html>
