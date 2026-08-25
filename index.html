@@ -792,7 +792,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3.0625rem;
+      gap: 1.8375rem;
       margin-top: 2rem;
     }
 
@@ -860,7 +860,7 @@
 
     @media (min-width: 651px) {
       .music-stack {
-        margin-top: 8rem;
+        margin-top: 8.459375rem;
         padding-bottom: 6.125rem;
       }
       .music-heading {
@@ -883,6 +883,190 @@
       z-index: 2;
       width: min(380px, 84vw);
     }
+
+    /* The real Spotify iframe still does the actual streaming/licensed
+       playback — it's just shrunk to invisible rather than display:none,
+       since fully-hidden iframes can get their audio paused by the
+       browser. Our own UI below drives it via the iFrame API. */
+    .spotify-embed-cage {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      contain: strict;
+      z-index: -1;
+    }
+    .spotify-embed-cage * {
+      width: 1px !important;
+      height: 1px !important;
+    }
+
+    /* ── Custom player UI (replaces the visible Spotify widget) ── */
+    .wr-player {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wr-tracklist {
+      list-style: none;
+      max-height: 9.75rem;
+      overflow-y: auto;
+      border-top: 1px solid rgba(33, 29, 29, 0.25);
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .wr-tracklist::-webkit-scrollbar { display: none; }
+    .wr-track {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(33, 29, 29, 0.25);
+      font-family: var(--font-mono);
+      font-weight: 300;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--text);
+      cursor: pointer;
+      background: none;
+      border-left: none;
+      border-right: none;
+      text-align: left;
+    }
+    .wr-track-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .wr-track-num {
+      flex-shrink: 0;
+      width: 1.1rem;
+      font-size: 13px;
+      opacity: 0.55;
+    }
+    .wr-track-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-width: 0;
+      gap: 0.2rem;
+    }
+    .wr-track-title {
+      font-family: var(--font-body);
+      font-weight: 300;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wr-track-artist {
+      font-family: var(--font-body);
+      font-size: 11px;
+      opacity: 0.55;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wr-track-thumb {
+      flex-shrink: 0;
+      align-self: center;
+      width: 2.86rem;
+      height: 2.86rem;
+      object-fit: cover;
+      border: 1px solid rgba(33, 29, 29, 0.8);
+      display: block;
+    }
+    .wr-track.is-active { color: var(--wine); }
+    .wr-track.is-active .wr-track-num { opacity: 1; }
+    .wr-track:hover { opacity: 0.7; }
+
+    /* Progress bar: same drag pattern as the weather-reel scrollbar,
+       but sharp (no border-radius) and in the cream card's dark-on-
+       cream palette instead of the wine card's cream-on-wine one. */
+    .wr-progress-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+      margin-bottom: 1.28rem;
+    }
+
+    .wr-progress-hit {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 12px 0 10px;
+      cursor: pointer;
+      touch-action: none;
+    }
+    .wr-progress-hit:not(.is-seekable) {
+      cursor: default;
+    }
+    .wr-progress-track {
+      position: relative;
+      width: 100%;
+      height: 4px;
+      background: rgba(33, 29, 29, 0.25);
+      pointer-events: none;
+    }
+    .wr-progress-thumb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: var(--wine);
+      pointer-events: none;
+    }
+    .wr-timer {
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .wr-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 0.44rem;
+      margin-bottom: 0.64rem;
+    }
+    .wr-ctrl-btn {
+      appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      background: none;
+      padding: 0;
+      margin: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 1.71rem;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .wr-ctrl-btn img {
+      height: 100%;
+      width: auto;
+      display: block;
+    }
+    .wr-ctrl-btn:hover { opacity: 0.7; }
+
 
     /* ── Small screens: stack panels, page scrolls, logo turns white ── */
     @media (max-width: 650px) {
@@ -955,7 +1139,7 @@
       }
 
       .music-stack {
-        margin-top: 3.5rem;
+        margin-top: 3.959375rem;
       }
 
       /* header overlays the wine band at the top on mobile, so both
@@ -1042,7 +1226,118 @@
                 <img src="blank_CD.png" alt="" class="cd-image cd-image--spin" id="cdImage" />
               </div>
               <div class="player-wrap">
-                <div id="spotify-embed"></div>
+                <div class="spotify-embed-cage">
+                  <div id="spotify-embed"></div>
+                </div>
+
+                <div class="wr-player">
+                  <div class="wr-controls">
+                    <button type="button" class="wr-ctrl-btn" id="wrPrevBtn" aria-label="Previous track">
+                      <img src="music-icons/icon-previous.png" alt="">
+                    </button>
+                    <button type="button" class="wr-ctrl-btn" id="wrNextBtn" aria-label="Next track">
+                      <img src="music-icons/icon-next.png" alt="">
+                    </button>
+                    <button type="button" class="wr-ctrl-btn wr-ctrl-btn--play" id="wrPlayBtn" aria-label="Play">
+                      <img id="wrPlayIcon" src="music-icons/icon-play.png" alt="">
+                    </button>
+                    <a class="wr-ctrl-btn wr-ctrl-btn--plus" href="https://open.spotify.com/playlist/0XXOJH57JlfsukZGkiRdKz?si=GlIWVbt0RDirn-0_BI6dfg" target="_blank" rel="noopener noreferrer" aria-label="Open full playlist on Spotify">
+                      <img src="music-icons/icon-plus.png" alt="">
+                    </a>
+                  </div>
+
+                  <div class="wr-progress-row" id="wrProgressRow">
+                    <div class="wr-progress-hit" id="wrProgressHit">
+                      <div class="wr-progress-track">
+                        <div class="wr-progress-thumb" id="wrProgressThumb"></div>
+                      </div>
+                    </div>
+                    <span class="wr-timer" id="wrTimer">-00:00</span>
+                  </div>
+
+                  <ol class="wr-tracklist" id="wrTracklist">
+                    <li class="wr-track" data-uri="spotify:track:6EOJjwcPgGWe98IDyCsBmY" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">01</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">In The Waiting Line</span>
+                        <span class="wr-track-artist">Zero 7, Sophie Barker</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273e79a1017901613837ea0fca9" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:3ZzhV6JIDKWvWR7wiKWD0C" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">02</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">La femme d&rsquo;argent</span>
+                        <span class="wr-track-artist">Air</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273f175f7e9aa80290164db00a3" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:7DBBuzCuZQaWNRix9ys6UB" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">03</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Suzuki</span>
+                        <span class="wr-track-artist">Tosca</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273253a1b35c8c2995bebe300af" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:53VS3tjssARzYcVoyG5vXE" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">04</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">All That We Perceive</span>
+                        <span class="wr-track-artist">Thievery Corporation</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273943b30cf86f0edd3fc5a3221" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:7l7Z0eHAZ4uoNho7moZlTv" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">05</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Modular Mix</span>
+                        <span class="wr-track-artist">Air</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273345d6b305ba4e618ce86749a" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:0KVNBXWdsyZs5dicoOTUyq" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">06</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Lebanese Blonde</span>
+                        <span class="wr-track-artist">Thievery Corporation</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273976bc2ace1672ba9400a0662" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:0VcvKN17fqyvbznfwypjDB" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">07</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Da Du Dah</span>
+                        <span class="wr-track-artist">Korokoro</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b27395ee9ba6913b82d4724ec1f7" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:5lMugQF80AuN6uukFJLT58" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">08</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Junie</span>
+                        <span class="wr-track-artist">Solange</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b2735fbf6306df238e6b7356ac03" alt="">
+                    </li>
+                  </ol>
+                </div>
               </div>
             </div>
           </div>
@@ -1449,27 +1744,163 @@
     wrUpdateThumb();
   </script>
 
-  <!-- ── Spotify IFrame API: syncs CD spin to actual playback state ── -->
+  <!-- ── Spotify IFrame API: drives the custom player UI + CD spin ── -->
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
   <script>
     window.onSpotifyIframeApiReady = (IFrameAPI) => {
       const element = document.getElementById('spotify-embed');
       const cdImage = document.getElementById('cdImage');
 
-      const options = {
-        uri: 'spotify:playlist:0XXOJH57JlfsukZGkiRdKz',
-        width: '100%',
-        height: '152'
-      };
+      const trackEls = Array.from(document.querySelectorAll('#wrTracklist .wr-track'));
+      const tracklistEl = document.getElementById('wrTracklist');
+      const playBtn = document.getElementById('wrPlayBtn');
+      const playIcon = document.getElementById('wrPlayIcon');
+      const prevBtn = document.getElementById('wrPrevBtn');
+      const nextBtn = document.getElementById('wrNextBtn');
+      const progressRow = document.getElementById('wrProgressRow');
+      const progressHit = document.getElementById('wrProgressHit');
+      const progressThumb = document.getElementById('wrProgressThumb');
+      const timerEl = document.getElementById('wrTimer');
+
+      // "-MM:SS" counting down to a plain "00:00" (no minus) at the end.
+      function formatCountdown(ms) {
+        const totalSeconds = Math.max(0, Math.round(ms / 1000));
+        const mm = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const ss = String(totalSeconds % 60).padStart(2, '0');
+        const sign = totalSeconds > 0 ? '-' : '';
+        return `${sign}${mm}:${ss}`;
+      }
+
+      const ICON_PLAY = 'music-icons/icon-play.png';
+      const ICON_PAUSE = 'music-icons/icon-pause.png';
+
+      // A preview clip (no Premium session logged into Spotify in this
+      // browser) always plays a fixed ~30s snippet, so any duration at
+      // or under that is treated as preview mode and the progress bar
+      // (which needs a real, seekable duration) stays hidden.
+      const PREVIEW_MAX_MS = 31000;
+
+      let currentIndex = 0;
+      let currentDurationMs = 0;
+      let dragging = false;
+      let trackEnded = false;
+      let lastPlayingPosition = 0;
+      let lastPlayingDuration = 0;
+
+      function scrollActiveIntoView(index) {
+        const track = trackEls[index];
+        const listRect = tracklistEl.getBoundingClientRect();
+        const trackRect = track.getBoundingClientRect();
+        const offset = (trackRect.top - listRect.top) + tracklistEl.scrollTop;
+        tracklistEl.scrollTop = offset;
+      }
+
+      function setActiveTrack(index) {
+        trackEls.forEach((el, i) => el.classList.toggle('is-active', i === index));
+        scrollActiveIntoView(index);
+      }
 
       const callback = (EmbedController) => {
+        function loadTrack(index, autoplay) {
+          currentIndex = (index + trackEls.length) % trackEls.length;
+          trackEnded = false;
+          lastPlayingPosition = 0;
+          lastPlayingDuration = 0;
+          setActiveTrack(currentIndex);
+          progressThumb.style.width = '0%';
+          timerEl.textContent = '-00:00';
+          EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
+          if (autoplay) EmbedController.play();
+        }
+
         EmbedController.addListener('playback_update', (e) => {
-          if (e.data.isPaused) {
-            cdImage.classList.remove('playing');
-          } else {
-            cdImage.classList.add('playing');
+          const { isPaused, position, duration } = e.data;
+
+          cdImage.classList.toggle('playing', !isPaused);
+          playIcon.src = isPaused ? ICON_PLAY : ICON_PAUSE;
+          playBtn.setAttribute('aria-label', isPaused ? 'Play' : 'Pause');
+
+          currentDurationMs = duration;
+          const isPreview = !duration || duration <= PREVIEW_MAX_MS;
+          progressHit.classList.toggle('is-seekable', !isPreview);
+
+          if (!dragging && duration > 0) {
+            progressThumb.style.width = Math.min(100, (position / duration) * 100) + '%';
+            timerEl.textContent = formatCountdown(duration - position);
+          }
+
+          // The iFrame API has no explicit "ended" event, so infer it.
+          // Some players reset position back to ~0 in the very same
+          // update where isPaused flips true once a track finishes, so
+          // checking that update's own position is unreliable — instead
+          // compare against the last position seen *while still
+          // playing*, which reflects where playback actually was right
+          // before it stopped.
+          if (!isPaused) {
+            lastPlayingPosition = position;
+            lastPlayingDuration = duration;
+            trackEnded = false;
+          } else if (!trackEnded && lastPlayingDuration > 0) {
+            const remaining = lastPlayingDuration - lastPlayingPosition;
+            const pctComplete = lastPlayingPosition / lastPlayingDuration;
+            if (remaining <= 1200 || pctComplete >= 0.97) {
+              trackEnded = true;
+              loadTrack(currentIndex + 1, true);
+            }
           }
         });
+
+        playBtn.addEventListener('click', () => EmbedController.togglePlay());
+        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, true));
+        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, true));
+
+        trackEls.forEach((el, i) => {
+          el.addEventListener('click', () => loadTrack(i, true));
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              loadTrack(i, true);
+            }
+          });
+        });
+
+        function ratioFromClientX(clientX) {
+          const rect = progressHit.getBoundingClientRect();
+          return Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+        }
+
+        progressHit.addEventListener('pointerdown', (e) => {
+          if (!progressHit.classList.contains('is-seekable')) return;
+          dragging = true;
+          progressHit.setPointerCapture(e.pointerId);
+          const ratio = ratioFromClientX(e.clientX);
+          progressThumb.style.width = (ratio * 100) + '%';
+          if (currentDurationMs > 0) timerEl.textContent = formatCountdown(currentDurationMs * (1 - ratio));
+        });
+        progressHit.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          const ratio = ratioFromClientX(e.clientX);
+          progressThumb.style.width = (ratio * 100) + '%';
+          if (currentDurationMs > 0) timerEl.textContent = formatCountdown(currentDurationMs * (1 - ratio));
+        });
+        progressHit.addEventListener('pointerup', (e) => {
+          if (!dragging) return;
+          dragging = false;
+          progressHit.releasePointerCapture(e.pointerId);
+          const ratio = ratioFromClientX(e.clientX);
+          if (currentDurationMs > 0) {
+            EmbedController.seek((ratio * currentDurationMs) / 1000);
+          }
+        });
+        progressHit.addEventListener('pointercancel', () => { dragging = false; });
+
+        setActiveTrack(currentIndex);
+      };
+
+      const options = {
+        uri: trackEls[0].dataset.uri,
+        width: '100%',
+        height: '80'
       };
 
       IFrameAPI.createController(element, options, callback);
