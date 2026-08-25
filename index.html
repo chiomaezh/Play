@@ -1787,6 +1787,34 @@
       let lastPlayingPosition = 0;
       let lastPlayingDuration = 0;
 
+      // The iFrame API only fires playback_update roughly once a second,
+      // which made the bar visibly "step" forward instead of gliding.
+      // To smooth it out, we keep a local (position, timestamp) pair
+      // from the most recent update and interpolate every animation
+      // frame based on elapsed real time, only snapping back to the
+      // API's real position whenever a fresh update arrives (which also
+      // corrects any drift).
+      let progressPlaying = false;
+      let basePosition = 0;
+      let baseTimestamp = 0;
+
+      function renderProgress(positionMs, durationMs) {
+        if (durationMs > 0) {
+          progressThumb.style.width = Math.min(100, (positionMs / durationMs) * 100) + '%';
+          timerEl.textContent = formatCountdown(durationMs - positionMs);
+        }
+      }
+
+      function tickProgress() {
+        if (progressPlaying && !dragging && currentDurationMs > 0) {
+          const elapsed = performance.now() - baseTimestamp;
+          const position = Math.min(currentDurationMs, basePosition + elapsed);
+          renderProgress(position, currentDurationMs);
+        }
+        requestAnimationFrame(tickProgress);
+      }
+      tickProgress();
+
       function scrollActiveIntoView(index) {
         const track = trackEls[index];
         const listRect = tracklistEl.getBoundingClientRect();
@@ -1807,6 +1835,9 @@
           lastPlayingPosition = 0;
           lastPlayingDuration = 0;
           setActiveTrack(currentIndex);
+          progressPlaying = false;
+          basePosition = 0;
+          baseTimestamp = performance.now();
           progressThumb.style.width = '0%';
           timerEl.textContent = '-00:00';
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
@@ -1824,9 +1855,11 @@
           const isPreview = !duration || duration <= PREVIEW_MAX_MS;
           progressHit.classList.toggle('is-seekable', !isPreview);
 
+          progressPlaying = !isPaused;
           if (!dragging && duration > 0) {
-            progressThumb.style.width = Math.min(100, (position / duration) * 100) + '%';
-            timerEl.textContent = formatCountdown(duration - position);
+            basePosition = position;
+            baseTimestamp = performance.now();
+            renderProgress(position, duration);
           }
 
           // The iFrame API has no explicit "ended" event, so infer it.
@@ -1889,6 +1922,8 @@
           progressHit.releasePointerCapture(e.pointerId);
           const ratio = ratioFromClientX(e.clientX);
           if (currentDurationMs > 0) {
+            basePosition = ratio * currentDurationMs;
+            baseTimestamp = performance.now();
             EmbedController.seek((ratio * currentDurationMs) / 1000);
           }
         });
