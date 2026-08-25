@@ -1025,10 +1025,6 @@
       width: 0%;
       background: var(--wine);
       pointer-events: none;
-      transition: width 1s linear;
-    }
-    .wr-progress-thumb.no-transition {
-      transition: none;
     }
     .wr-timer {
       flex-shrink: 0;
@@ -1811,10 +1807,7 @@
           lastPlayingPosition = 0;
           lastPlayingDuration = 0;
           setActiveTrack(currentIndex);
-          progressThumb.classList.add('no-transition');
           progressThumb.style.width = '0%';
-          void progressThumb.offsetWidth; // force reflow so the reset is instant
-          progressThumb.classList.remove('no-transition');
           timerEl.textContent = '-00:00';
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
           if (autoplay) EmbedController.play();
@@ -1879,7 +1872,6 @@
         progressHit.addEventListener('pointerdown', (e) => {
           if (!progressHit.classList.contains('is-seekable')) return;
           dragging = true;
-          progressThumb.classList.add('no-transition');
           progressHit.setPointerCapture(e.pointerId);
           const ratio = ratioFromClientX(e.clientX);
           progressThumb.style.width = (ratio * 100) + '%';
@@ -1894,17 +1886,13 @@
         progressHit.addEventListener('pointerup', (e) => {
           if (!dragging) return;
           dragging = false;
-          progressThumb.classList.remove('no-transition');
           progressHit.releasePointerCapture(e.pointerId);
           const ratio = ratioFromClientX(e.clientX);
           if (currentDurationMs > 0) {
             EmbedController.seek((ratio * currentDurationMs) / 1000);
           }
         });
-        progressHit.addEventListener('pointercancel', () => {
-          dragging = false;
-          progressThumb.classList.remove('no-transition');
-        });
+        progressHit.addEventListener('pointercancel', () => { dragging = false; });
 
         setActiveTrack(currentIndex);
       };
