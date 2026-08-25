@@ -1797,6 +1797,8 @@
       let progressPlaying = false;
       let basePosition = 0;
       let baseTimestamp = 0;
+      let isPausedState = true;
+      let playRequestToken = 0;
 
       function renderProgress(positionMs, durationMs) {
         if (durationMs > 0) {
@@ -1829,6 +1831,26 @@
       }
 
       const callback = (EmbedController) => {
+        // In preview mode, calling EmbedController.play() immediately
+        // after loadUri() is unreliable — the embed sometimes silently
+        // ignores it (a known quirk of Spotify's iframe player), so a
+        // preview track can advance on "ended" but then just sit there
+        // paused instead of continuing to play. To work around it, we
+        // keep re-issuing play() a few times, a little further apart
+        // each time, until playback actually starts — but only for the
+        // track that requested it, and only until the user does
+        // something else (manual play/pause, skip, seek) which
+        // invalidates the request.
+        function requestAutoplay(index) {
+          const token = ++playRequestToken;
+          const tryPlay = (attempt) => {
+            if (token !== playRequestToken || currentIndex !== index || !isPausedState) return;
+            EmbedController.play();
+            if (attempt < 4) setTimeout(() => tryPlay(attempt + 1), 300 + attempt * 250);
+          };
+          tryPlay(0);
+        }
+
         function loadTrack(index, autoplay) {
           currentIndex = (index + trackEls.length) % trackEls.length;
           trackEnded = false;
@@ -1841,7 +1863,7 @@
           progressThumb.style.width = '0%';
           timerEl.textContent = '-00:00';
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
-          if (autoplay) EmbedController.play();
+          if (autoplay) requestAutoplay(currentIndex);
         }
 
         EmbedController.addListener('playback_update', (e) => {
@@ -1850,10 +1872,19 @@
           cdImage.classList.toggle('playing', !isPaused);
           playIcon.src = isPaused ? ICON_PLAY : ICON_PAUSE;
           playBtn.setAttribute('aria-label', isPaused ? 'Play' : 'Pause');
+          isPausedState = isPaused;
 
-          currentDurationMs = duration;
-          const isPreview = !duration || duration <= PREVIEW_MAX_MS;
-          progressHit.classList.toggle('is-seekable', !isPreview);
+          // Some updates — particularly the one where isPaused flips to
+          // true — report duration as 0/undefined even mid-track (see
+          // the "ended" comment below for the same quirk with
+          // position). Only trust duration when it's a real value, so a
+          // pause doesn't wipe out currentDurationMs/is-seekable and
+          // make the bar un-draggable until playback resumes.
+          if (duration > 0) {
+            currentDurationMs = duration;
+            const isPreview = duration <= PREVIEW_MAX_MS;
+            progressHit.classList.toggle('is-seekable', !isPreview);
+          }
 
           progressPlaying = !isPaused;
           if (!dragging && duration > 0) {
@@ -1883,7 +1914,10 @@
           }
         });
 
-        playBtn.addEventListener('click', () => EmbedController.togglePlay());
+        playBtn.addEventListener('click', () => {
+          playRequestToken++;
+          EmbedController.togglePlay();
+        });
         prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, true));
         nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, true));
 
