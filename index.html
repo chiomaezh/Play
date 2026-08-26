@@ -1085,9 +1085,9 @@
       border: 1px solid rgba(33, 29, 29, 0.8);
       display: block;
     }
-    .wr-track.is-active { color: var(--wine); }
+    .wr-track.is-active { color: var(--wine); cursor: default; }
     .wr-track.is-active .wr-track-num { opacity: 1; }
-    .wr-track:hover { opacity: 0.7; }
+    .wr-track:not(.is-active):hover { opacity: 0.7; }
 
     /* Progress bar: same drag pattern as the weather-reel scrollbar,
        but sharp (no border-radius) and in the cream card's dark-on-
@@ -2039,9 +2039,26 @@
           const elapsed = performance.now() - baseTimestamp;
           const position = Math.min(currentDurationMs, basePosition + elapsed);
           renderProgress(position, currentDurationMs);
+
+          // Fallback "ended" detection, driven by our own interpolated
+          // clock rather than another playback_update from Spotify. In
+          // preview mode (no Premium session) the embed sometimes just
+          // goes silent when the ~30s clip finishes instead of firing
+          // a final isPaused:true update — when that happens the
+          // listener-based check below never runs, so the UI is left
+          // showing "playing" (CD spinning, pause icon) with no audio
+          // actually coming out, forever, until the user pokes the
+          // pause button. Advancing here as soon as our local clock
+          // reaches the track's duration fixes that regardless of
+          // whether Spotify ever tells us it stopped.
+          if (!trackEnded && trackAdvanceHandler && (currentDurationMs - position) <= 250) {
+            trackEnded = true;
+            trackAdvanceHandler();
+          }
         }
         requestAnimationFrame(tickProgress);
       }
+      let trackAdvanceHandler = null;
       tickProgress();
 
       function scrollActiveIntoView(index) {
@@ -2092,6 +2109,7 @@
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
           if (autoplay) requestAutoplay(currentIndex);
         }
+        trackAdvanceHandler = () => loadTrack(currentIndex + 1, true);
 
         EmbedController.addListener('playback_update', (e) => {
           const { isPaused, position, duration } = e.data;
@@ -2149,10 +2167,17 @@
         nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, true));
 
         trackEls.forEach((el, i) => {
-          el.addEventListener('click', () => loadTrack(i, true));
+          // Once a track is the active/selected one, its row shouldn't
+          // be clickable anymore — clicking it used to reload (and
+          // restart) the same track from the top.
+          el.addEventListener('click', () => {
+            if (i === currentIndex) return;
+            loadTrack(i, true);
+          });
           el.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
+              if (i === currentIndex) return;
               loadTrack(i, true);
             }
           });
