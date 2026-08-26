@@ -892,33 +892,23 @@
       }
     }
 
-    /* ── Desktop only: expanded tracklist pushes the CD + heading out
-       and takes over the top of the card ──
-       The alignment-mode switch (centered → top-anchored) itself can't
-       be transitioned in CSS — align-items is a discrete property, and
-       jumping straight to it would snap instead of glide. JS handles
-       that part (see setTracklistExpanded): it measures the jump this
-       causes and undoes it with a transform, then releases the
-       transform on the next frame so .music-stack's own
-       `transition: transform` eases it back to zero. Everything below
-       is just the declarative half — the CD/heading's own fade-out and
-       the container's top-anchor target. */
+    /* ── Desktop only: expanding the tracklist slides the whole stack
+       (heading, CD, controls, progress bar, tracklist) up together as
+       one rigid block — no separate fade-outs or height-collapses on
+       the heading/CD anymore. JS (see updateMusicStackOffset) measures
+       how far to move it so the progress bar's bottom edge lines up
+       with the top of the hero text on the wine side, then sets that
+       as a transform on .music-stack; the transition below eases it
+       into place. */
     @media (min-width: 651px) {
-      .cream-card--music {
-        transition: padding-top 0.4s ease;
-      }
       .cream-card--music.is-expanded {
-        align-items: flex-start;
-        padding-top: 9rem;
         /* The base rule above clips its own content with
            overflow:hidden — needed normally so the CD/heading don't
-           bleed past the card, but it was also silently clipping the
-           expanded tracklist past whatever fit in one viewport height,
-           regardless of the translateY the scroll handler applies
-           below. Switching to visible here means only the outer
-           .cream-viewport clips it, which is what actually lets the
-           translateY reveal the rest as the user scrolls. No
-           overflow-y:auto here on purpose: giving the card its own
+           bleed past the card, but it also clips the slid-up stack and
+           the expanded tracklist. Switching to visible here means only
+           the outer .cream-viewport clips it, which is what actually
+           lets the translateY reveal everything as the user scrolls.
+           No overflow-y:auto here on purpose: giving the card its own
            scroll context creates a second, nested scrollbar next to
            the cream column's real one. Instead, when the tracklist is
            too tall to fit, the JS scroll handler below (see
@@ -929,31 +919,7 @@
       }
 
       .music-stack {
-        transition: transform 0.4s ease, margin-top 0.4s ease, gap 0.4s ease;
-      }
-      .music-stack.is-expanded {
-        margin-top: 0;
-        gap: 0;
-      }
-
-      .music-heading {
-        transition: opacity 0.4s ease, left 0.4s ease;
-      }
-      .music-stack.is-expanded .music-heading {
-        opacity: 0;
-        left: -3rem;
-        pointer-events: none;
-      }
-
-      .cd-stack {
-        transition: height 0.4s ease, opacity 0.4s ease, transform 0.4s ease;
-        overflow: hidden;
-      }
-      .music-stack.is-expanded .cd-stack {
-        height: 0;
-        opacity: 0;
-        transform: translateY(-2rem);
-        pointer-events: none;
+        transition: transform 0.4s ease;
       }
     }
 
@@ -1031,6 +997,18 @@
       padding-bottom: 0;
       border-bottom-color: transparent;
       pointer-events: none;
+    }
+
+    /* Phone: no animated reveal — the max-height/opacity easing above
+       was catching on the section-height recalculation that also runs
+       on expand (see matchCreamCardHeights), reading as glitchy. On
+       phone this should behave like the hamburger nav: press the
+       arrow, the list is just immediately there, and the card grows
+       to fit it. */
+    @media (max-width: 650px) {
+      .wr-track {
+        transition: none;
+      }
     }
     .wr-track-main {
       display: flex;
@@ -1178,6 +1156,7 @@
          collapsed/active track. */
       display: none;
       align-items: center;
+      align-self: flex-end;
       gap: 0.4rem;
       margin-top: 1.5rem;
       font-family: var(--font-body);
@@ -1895,53 +1874,73 @@
     const wrTracklistEl = document.getElementById('wrTracklist');
     const musicCardEl = document.querySelector('.cream-card--music');
     const musicStackEl = document.querySelector('.music-stack');
+    const wrProgressRowEl = document.getElementById('wrProgressRow');
+
+    // Desktop only: positions the whole .music-stack (heading, CD,
+    // controls, progress bar, tracklist — moved as a single rigid
+    // block) so the bottom of the progress bar lines up with the top
+    // of the hero text on the wine side. Re-measures from a clean
+    // (untransformed) baseline each time, so it's accurate whether
+    // called on expand, collapse, or a resize while expanded.
+    function updateMusicStackOffset() {
+      const heroLeadEl = document.querySelector('.hero-lead');
+      if (!musicStackEl || !heroLeadEl || !wrProgressRowEl) return;
+
+      if (!musicStackEl.classList.contains('is-expanded')) {
+        musicStackEl.style.transform = '';
+        return;
+      }
+
+      musicStackEl.style.transform = '';
+      void musicStackEl.getBoundingClientRect(); // force reflow before measuring
+
+      const targetY = heroLeadEl.getBoundingClientRect().top;
+      const currentBottom = wrProgressRowEl.getBoundingClientRect().bottom;
+      const deltaY = targetY - currentBottom;
+
+      musicStackEl.style.transform = `translateY(${deltaY}px)`;
+    }
 
     function setTracklistExpanded(expanded) {
       wrExpandBtn.classList.toggle('is-expanded', expanded);
       wrExpandBtn.setAttribute('aria-expanded', String(expanded));
       wrTracklistEl.classList.toggle('is-expanded', expanded);
-
-      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
-      if (!isDesktop) return;
-
-      // FLIP: align-items/padding-top (toggled below via the
-      // .is-expanded classes) can't be transitioned directly, so
-      // measure the jump they cause and cancel it out with a
-      // transform, then release the transform next frame so
-      // .music-stack's own `transition: transform` eases it back to
-      // zero — reads as one continuous slide instead of a snap.
-      const first = musicStackEl.getBoundingClientRect();
       musicCardEl.classList.toggle('is-expanded', expanded);
       musicStackEl.classList.toggle('is-expanded', expanded);
-      const last = musicStackEl.getBoundingClientRect();
-      const deltaY = first.top - last.top;
 
-      if (deltaY) {
-        musicStackEl.style.transition = 'none';
-        musicStackEl.style.transform = `translateY(${deltaY}px)`;
-        musicStackEl.getBoundingClientRect(); // force reflow before releasing
-        requestAnimationFrame(() => {
-          musicStackEl.style.transition = '';
-          musicStackEl.style.transform = '';
-        });
-      }
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
 
-      // Recalculate how much (if any) extra scroll room the cream
-      // column needs for the tracklist's new height. Called once now
-      // (covers collapsing, which shrinks instantly) and again after
-      // the expand transition finishes (covers expanding, since the
-      // tracklist grows over ~0.35s and its true final height isn't
-      // measurable until that settles).
-      if (window.wrUpdateCreamTrack) {
-        window.wrUpdateCreamTrack();
-        setTimeout(window.wrUpdateCreamTrack, 400);
+      if (isDesktop) {
+        updateMusicStackOffset();
+        // Recalculate how much (if any) extra scroll room the cream
+        // column needs for the tracklist's new height, and re-run the
+        // stack-offset measurement once the individual tracks finish
+        // their own reveal animation (~0.35s) — both depend on the
+        // tracklist's true final size, which isn't settled yet on the
+        // frame this toggles.
+        if (window.wrUpdateCreamTrack) {
+          window.wrUpdateCreamTrack();
+          setTimeout(window.wrUpdateCreamTrack, 400);
+        }
+        setTimeout(updateMusicStackOffset, 400);
+      } else {
+        // Phone: no animation to wait out — the card should just grow
+        // (or shrink) to fit immediately, matching the hamburger menu.
+        window.dispatchEvent(new Event('resize'));
       }
     }
 
     wrExpandBtn.addEventListener('click', () => {
       setTracklistExpanded(!wrTracklistEl.classList.contains('is-expanded'));
     });
+
+    window.addEventListener('resize', () => {
+      if (wrTracklistEl.classList.contains('is-expanded')) {
+        updateMusicStackOffset();
+      }
+    });
   </script>
+
 
   <!-- ── Spotify IFrame API: drives the custom player UI + CD spin ── -->
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
