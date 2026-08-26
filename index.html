@@ -909,7 +909,12 @@
       }
       .cream-card--music.is-expanded {
         align-items: flex-start;
-        padding-top: 9rem;
+        /* 5.21rem (not the 9rem used elsewhere for the hero-text
+           top) is chosen so the BOTTOM of the progress bar lands at
+           9rem — the same offset as the hero copy's own top padding
+           — rather than the top of the control row landing there.
+           9rem (controls+progress block height, 3.79rem) = 5.21rem. */
+        padding-top: 5.21rem;
         /* The base rule above clips its own content with
            overflow:hidden — needed normally so the CD/heading don't
            bleed past the card, but it was also silently clipping the
@@ -1253,11 +1258,17 @@
         grid-area: right;
         min-height: 70vh;
         padding-bottom: 3.5rem;
+        /* Top-anchor the CD/player instead of the base rule's
+           vertical centering. With align-items:center, expanding the
+           tracklist grows .music-stack taller, which shifts the
+           whole (now-taller) box upward to stay centered — dragging
+           the CD and player up with it. flex-start pins the stack's
+           top edge to the card's top at all times, so expanding only
+           adds height below the player: the CD and player never move. */
+        align-items: flex-start;
       }
       .cream-card--games {
         grid-area: games;
-        /* Same length as the music card above it (JS enforces exact
-           equality below; this is the layout default before JS runs). */
         min-height: 70vh;
         padding: 1.75rem 1.5rem 1.75rem;
       }
@@ -2174,46 +2185,6 @@
       IFrameAPI.createController(element, options, callback);
     };
   </script>
-  <!-- ── Cream cards: force music, Brain Games & blank sections to match height on phone ── -->
-  <script>
-    function matchCreamCardHeights() {
-      const musicCard = document.querySelector('.cream-card--music');
-      const gamesCard = document.querySelector('.cream-card--games');
-      const blankCard = document.querySelector('.cream-card--blank');
-      if (!musicCard || !gamesCard || !blankCard) return;
-
-      const isMobile = window.matchMedia('(max-width: 650px)').matches;
-      if (!isMobile) {
-        musicCard.style.height = '';
-        gamesCard.style.height = '';
-        blankCard.style.height = '';
-        return;
-      }
-
-      // Reset to auto first so we measure each card's true natural
-      // height (top to bottom, padding and content included), not a
-      // stale height left over from a previous measurement.
-      musicCard.style.height = 'auto';
-      gamesCard.style.height = 'auto';
-      // The footer card is intentionally left out of this — it sizes
-      // to its own content (divider gap + footer + the 5rem bottom
-      // padding matching About.html), not stretched to match the
-      // other two sections.
-      blankCard.style.height = '';
-
-      const tallest = Math.max(
-        musicCard.getBoundingClientRect().height,
-        gamesCard.getBoundingClientRect().height
-      );
-
-      musicCard.style.height = tallest + 'px';
-      gamesCard.style.height = tallest + 'px';
-    }
-
-    window.addEventListener('load', matchCreamCardHeights);
-    window.addEventListener('resize', matchCreamCardHeights);
-  </script>
-
   <!-- ── Cream column: vertical scroll drives an L-shaped card slide (PC only) ──
        Music → Brain Games slides horizontally; Brain Games → blank card
        slides vertically. Scroll interaction itself is always vertical. ── -->
