@@ -437,17 +437,7 @@
 
     .cream-card--music {
       display: flex;
-      /* Top-anchored, not centered. This used to be align-items:center
-         with a switch to flex-start only while expanded, but that
-         meant switching back to center on collapse while the
-         tracklist was still mid-shrink (its own 0.35s animation) —
-         the browser was continuously re-centering content live for
-         that whole window, fighting the single transform already
-         easing it into place and reading as a bounce. Staying
-         flex-start always avoids that; syncMusicCardPadding() (JS)
-         compensates with a computed padding-top so the default
-         (collapsed) look is unchanged. */
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
       overflow: hidden;
     }
@@ -912,12 +902,10 @@
        into place. */
     @media (min-width: 651px) {
       .cream-card--music.is-expanded {
-        /* The base rule now sets align-items:flex-start always (see
-           its comment), so nothing needs to switch here for that
-           anymore — this just handles the overflow side of things.
+        /* The base rule above clips its own content with
            overflow:hidden — needed normally so the CD/heading don't
-           bleed past the card — also clips the slid-up stack and the
-           expanded tracklist. Switching to visible here means only
+           bleed past the card, but it also clips the slid-up stack and
+           the expanded tracklist. Switching to visible here means only
            the outer .cream-viewport clips it, which is what actually
            lets the translateY reveal everything as the user scrolls.
            No overflow-y:auto here on purpose: giving the card its own
@@ -928,6 +916,22 @@
            cream column's own scroll — same "one real scrollbar drives
            everything" pattern already used for the card-swap slide. */
         overflow: visible;
+      }
+
+      /* Separate from .is-expanded on purpose: this needs to stay
+         applied for the whole ~0.35s the tracklist takes to collapse,
+         not just switch off the instant collapsing starts. The base
+         rule's align-items:center recalculates live on every frame the
+         tracklist's height changes — held through the collapse, it
+         was fighting the single .music-stack transform already easing
+         things into place, reading as a bounce. setTracklistExpanded
+         keeps this class applied until the collapse settles, then
+         releases it with its own small FLIP so switching back to
+         centered is itself smooth rather than a snap. Collapsed,
+         resting appearance is completely unaffected — this only ever
+         applies transiently during the expand/collapse motion. */
+      .cream-card--music.is-top-anchored {
+        align-items: flex-start;
       }
 
       .music-stack {
@@ -1906,6 +1910,7 @@
     const musicCardEl = document.querySelector('.cream-card--music');
     const musicStackEl = document.querySelector('.music-stack');
     const wrControlsEl = document.querySelector('.wr-controls');
+    let topAnchorReleaseTimeout = null;
 
     // Desktop only: computes how far .music-stack needs to move so the
     // top of the controls row (prev/play/next/expand) lines up with the
@@ -1919,32 +1924,6 @@
       const targetY = heroLeadEl.getBoundingClientRect().top;
       const currentTop = wrControlsEl.getBoundingClientRect().top;
       return targetY - currentTop;
-    }
-
-    // Desktop only: since .cream-card--music is permanently
-    // align-items:flex-start now (see its CSS comment — switching it
-    // per state used to cause a live-re-centering "bounce" while the
-    // tracklist was mid-collapse), the collapsed/default view no
-    // longer gets centered for free. This computes a padding-top that
-    // puts it back where true centering would have, based on the
-    // collapsed content's actual height, so the default look is
-    // unchanged. Only meaningful for the collapsed state — the
-    // expanded state is positioned entirely by the hero-align
-    // transform below, which doesn't care what padding is doing.
-    function syncMusicCardPadding() {
-      if (!musicCardEl || !musicStackEl) return;
-
-      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
-      if (!isDesktop || musicStackEl.classList.contains('is-expanded')) {
-        musicCardEl.style.paddingTop = '';
-        return;
-      }
-
-      musicCardEl.style.paddingTop = '0px';
-      void musicCardEl.getBoundingClientRect(); // force reflow before measuring
-      const cardHeight = musicCardEl.getBoundingClientRect().height;
-      const stackHeight = musicStackEl.getBoundingClientRect().height;
-      musicCardEl.style.paddingTop = Math.max(0, (cardHeight - stackHeight) / 2) + 'px';
     }
 
     // Recomputes and re-applies the hero-alignment transform without
@@ -1992,20 +1971,28 @@
       // the whole thing cancels and releases as a single move.
       const first = isDesktop && musicStackEl ? musicStackEl.getBoundingClientRect() : null;
 
+      // Cancel any pending release-from-top-anchor left over from a
+      // previous collapse, in case the user re-expands before it's
+      // fired (see the bottom of this function).
+      if (topAnchorReleaseTimeout) {
+        clearTimeout(topAnchorReleaseTimeout);
+        topAnchorReleaseTimeout = null;
+      }
+
       wrExpandBtn.classList.toggle('is-expanded', expanded);
       wrExpandBtn.setAttribute('aria-expanded', String(expanded));
       wrTracklistEl.classList.toggle('is-expanded', expanded);
       musicCardEl.classList.toggle('is-expanded', expanded);
       musicStackEl.classList.toggle('is-expanded', expanded);
 
-      if (!isDesktop) return; // Phone: normal document flow, nothing else to do.
+      // .is-top-anchored is added immediately on expand, but
+      // deliberately *not* removed immediately on collapse — see the
+      // release step below.
+      if (expanded && musicCardEl) {
+        musicCardEl.classList.add('is-top-anchored');
+      }
 
-      // Clears to '' while expanded, or recomputes for the collapsed
-      // look — either way this needs to happen before "last" is
-      // measured below, so the padding change is folded into the same
-      // FLIP cancel-then-release as everything else, rather than
-      // popping separately.
-      syncMusicCardPadding();
+      if (!isDesktop) return; // Phone: normal document flow, nothing else to do.
 
       musicStackEl.style.transform = '';
       if (musicCardEl) musicCardEl.style.transform = '';
@@ -2035,6 +2022,32 @@
         window.wrUpdateCreamTrack();
         setTimeout(window.wrUpdateCreamTrack, 400);
       }
+
+      if (!expanded && musicCardEl) {
+        // .is-top-anchored has been held through the collapse (see
+        // above and its CSS comment) so the browser doesn't
+        // live-recenter while the tracklist is shrinking. Once that's
+        // had time to settle, release it back to the default
+        // align-items:center — with its own small FLIP, so that
+        // switch is smooth too, rather than a final snap.
+        topAnchorReleaseTimeout = setTimeout(() => {
+          topAnchorReleaseTimeout = null;
+          const beforeRelease = musicStackEl.getBoundingClientRect();
+          musicCardEl.classList.remove('is-top-anchored');
+          void musicStackEl.getBoundingClientRect(); // force reflow
+          const afterRelease = musicStackEl.getBoundingClientRect();
+          const releaseDelta = beforeRelease.top - afterRelease.top;
+          if (releaseDelta) {
+            musicStackEl.style.transition = 'none';
+            musicStackEl.style.transform = `translateY(${releaseDelta}px)`;
+            musicStackEl.getBoundingClientRect(); // force reflow before releasing
+            requestAnimationFrame(() => {
+              musicStackEl.style.transition = '';
+              musicStackEl.style.transform = '';
+            });
+          }
+        }, 400);
+      }
     }
 
     wrExpandBtn.addEventListener('click', () => {
@@ -2046,18 +2059,6 @@
         updateMusicStackOffset();
       }
     });
-
-    // Sets the initial collapsed-state padding on load, and keeps it
-    // correct if the viewport is resized while collapsed (resizing
-    // while expanded doesn't need this — the expanded state ignores
-    // padding entirely, see syncMusicCardPadding above).
-    window.addEventListener('load', syncMusicCardPadding);
-    window.addEventListener('resize', () => {
-      if (!wrTracklistEl.classList.contains('is-expanded')) {
-        syncMusicCardPadding();
-      }
-    });
-    syncMusicCardPadding();
   </script>
 
 
