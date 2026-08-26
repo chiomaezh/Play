@@ -437,7 +437,17 @@
 
     .cream-card--music {
       display: flex;
-      align-items: center;
+      /* Top-anchored, not centered. This used to be align-items:center
+         with a switch to flex-start only while expanded, but that
+         meant switching back to center on collapse while the
+         tracklist was still mid-shrink (its own 0.35s animation) —
+         the browser was continuously re-centering content live for
+         that whole window, fighting the single transform already
+         easing it into place and reading as a bounce. Staying
+         flex-start always avoids that; syncMusicCardPadding() (JS)
+         compensates with a computed padding-top so the default
+         (collapsed) look is unchanged. */
+      align-items: flex-start;
       justify-content: center;
       overflow: hidden;
     }
@@ -902,10 +912,12 @@
        into place. */
     @media (min-width: 651px) {
       .cream-card--music.is-expanded {
-        /* The base rule above clips its own content with
+        /* The base rule now sets align-items:flex-start always (see
+           its comment), so nothing needs to switch here for that
+           anymore — this just handles the overflow side of things.
            overflow:hidden — needed normally so the CD/heading don't
-           bleed past the card, but it also clips the slid-up stack and
-           the expanded tracklist. Switching to visible here means only
+           bleed past the card — also clips the slid-up stack and the
+           expanded tracklist. Switching to visible here means only
            the outer .cream-viewport clips it, which is what actually
            lets the translateY reveal everything as the user scrolls.
            No overflow-y:auto here on purpose: giving the card its own
@@ -916,19 +928,6 @@
            cream column's own scroll — same "one real scrollbar drives
            everything" pattern already used for the card-swap slide. */
         overflow: visible;
-        /* The base rule's align-items:center re-centers .music-stack
-           within the card every time its height changes — which
-           includes the tracklist growing underneath the progress bar
-           as it expands. Left at center, that auto-recentering keeps
-           dragging the already-positioned heading/CD/progress bar
-           upward throughout the whole expand animation, stacking on
-           top of the translateY the JS below applies to align with
-           the hero text — the two effects compound and the stack
-           overshoots far past its intended position. Pinning to the
-           top here means growing the tracklist only ever adds height
-           *below* the existing content, never moves it, so the JS
-           transform is the only thing repositioning the stack. */
-        align-items: flex-start;
       }
 
       .music-stack {
@@ -1922,6 +1921,32 @@
       return targetY - currentTop;
     }
 
+    // Desktop only: since .cream-card--music is permanently
+    // align-items:flex-start now (see its CSS comment — switching it
+    // per state used to cause a live-re-centering "bounce" while the
+    // tracklist was mid-collapse), the collapsed/default view no
+    // longer gets centered for free. This computes a padding-top that
+    // puts it back where true centering would have, based on the
+    // collapsed content's actual height, so the default look is
+    // unchanged. Only meaningful for the collapsed state — the
+    // expanded state is positioned entirely by the hero-align
+    // transform below, which doesn't care what padding is doing.
+    function syncMusicCardPadding() {
+      if (!musicCardEl || !musicStackEl) return;
+
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+      if (!isDesktop || musicStackEl.classList.contains('is-expanded')) {
+        musicCardEl.style.paddingTop = '';
+        return;
+      }
+
+      musicCardEl.style.paddingTop = '0px';
+      void musicCardEl.getBoundingClientRect(); // force reflow before measuring
+      const cardHeight = musicCardEl.getBoundingClientRect().height;
+      const stackHeight = musicStackEl.getBoundingClientRect().height;
+      musicCardEl.style.paddingTop = Math.max(0, (cardHeight - stackHeight) / 2) + 'px';
+    }
+
     // Recomputes and re-applies the hero-alignment transform without
     // any FLIP animation — used on resize, where there's no discrete
     // class-toggle jump to compensate for, just a target position that
@@ -1943,19 +1968,17 @@
     function setTracklistExpanded(expanded) {
       const isDesktop = window.matchMedia('(min-width: 651px)').matches;
 
-      // FLIP: toggling .is-expanded here causes two discrete,
-      // non-animatable layout jumps at once — .cream-card--music
-      // switches align-items between center/flex-start (see its CSS
-      // comment), and the heading + CD instantly disappear (see
-      // .music-stack.is-expanded CSS). Rather than choreograph those
-      // separately, this just measures the combined effect: capture
-      // the position right before toggling the classes, then right
-      // after (with .music-stack's transform cleared, so this
+      // FLIP: toggling .is-expanded here causes a discrete,
+      // non-animatable layout jump — the heading + CD instantly
+      // disappear (see .music-stack.is-expanded CSS). Rather than
+      // choreograph that separately, this just measures the effect:
+      // capture the position right before toggling the classes, then
+      // right after (with .music-stack's transform cleared, so this
       // reflects pure layout, not a previous transform), and use the
       // difference as a one-frame instant transform that cancels the
-      // whole jump — released on the very next frame so only the
-      // *real* move (to the hero-aligned target, or back to 0 on
-      // collapse) animates via .music-stack's own transform transition.
+      // jump — released on the very next frame so only the *real*
+      // move (to the hero-aligned target, or back to 0 on collapse)
+      // animates via .music-stack's own transform transition.
       //
       // .cream-card--music also carries its own transform — set
       // directly by the scroll handler (updateCreamTrack) to reveal
@@ -1976,6 +1999,13 @@
       musicStackEl.classList.toggle('is-expanded', expanded);
 
       if (!isDesktop) return; // Phone: normal document flow, nothing else to do.
+
+      // Clears to '' while expanded, or recomputes for the collapsed
+      // look — either way this needs to happen before "last" is
+      // measured below, so the padding change is folded into the same
+      // FLIP cancel-then-release as everything else, rather than
+      // popping separately.
+      syncMusicCardPadding();
 
       musicStackEl.style.transform = '';
       if (musicCardEl) musicCardEl.style.transform = '';
@@ -2016,6 +2046,18 @@
         updateMusicStackOffset();
       }
     });
+
+    // Sets the initial collapsed-state padding on load, and keeps it
+    // correct if the viewport is resized while collapsed (resizing
+    // while expanded doesn't need this — the expanded state ignores
+    // padding entirely, see syncMusicCardPadding above).
+    window.addEventListener('load', syncMusicCardPadding);
+    window.addEventListener('resize', () => {
+      if (!wrTracklistEl.classList.contains('is-expanded')) {
+        syncMusicCardPadding();
+      }
+    });
+    syncMusicCardPadding();
   </script>
 
 
