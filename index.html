@@ -873,6 +873,59 @@
       }
     }
 
+    /* ── Desktop only: expanded tracklist pushes the CD + heading out
+       and takes over the top of the card ──
+       The alignment-mode switch (centered → top-anchored) itself can't
+       be transitioned in CSS — align-items is a discrete property, and
+       jumping straight to it would snap instead of glide. JS handles
+       that part (see setTracklistExpanded): it measures the jump this
+       causes and undoes it with a transform, then releases the
+       transform on the next frame so .music-stack's own
+       `transition: transform` eases it back to zero. Everything below
+       is just the declarative half — the CD/heading's own fade-out and
+       the container's top-anchor target. */
+    @media (min-width: 651px) {
+      .cream-card--music {
+        transition: padding-top 0.4s ease;
+      }
+      .cream-card--music.is-expanded {
+        align-items: flex-start;
+        padding-top: 9rem;
+        /* Safety net: if an unusually tall tracklist still doesn't fit
+           the viewport-height card, this keeps it reachable instead of
+           silently clipping it. */
+        overflow-y: auto;
+      }
+
+      .music-stack {
+        transition: transform 0.4s ease, margin-top 0.4s ease, gap 0.4s ease;
+      }
+      .music-stack.is-expanded {
+        margin-top: 0;
+        gap: 0;
+      }
+
+      .music-heading {
+        transition: opacity 0.4s ease, left 0.4s ease;
+      }
+      .music-stack.is-expanded .music-heading {
+        opacity: 0;
+        left: -3rem;
+        pointer-events: none;
+      }
+
+      .cd-stack {
+        transition: height 0.4s ease, opacity 0.4s ease, transform 0.4s ease;
+        overflow: hidden;
+      }
+      .music-stack.is-expanded .cd-stack {
+        height: 0;
+        opacity: 0;
+        transform: translateY(-2rem);
+        pointer-events: none;
+      }
+    }
+
     @keyframes spin-cd {
       from { transform: rotate(0deg); }
       to   { transform: rotate(360deg); }
@@ -912,13 +965,8 @@
 
     .wr-tracklist {
       list-style: none;
-      max-height: 9.75rem;
-      overflow-y: auto;
       border-top: 1px solid rgba(33, 29, 29, 0.25);
-      scrollbar-width: none;
-      -ms-overflow-style: none;
     }
-    .wr-tracklist::-webkit-scrollbar { display: none; }
     .wr-track {
       display: flex;
       align-items: center;
@@ -936,6 +984,22 @@
       border-left: none;
       border-right: none;
       text-align: left;
+      overflow: hidden;
+      max-height: 6rem;
+      opacity: 1;
+      transition: max-height 0.35s ease, opacity 0.3s ease, padding 0.35s ease, border-color 0.35s ease;
+    }
+    /* Collapsed state: only the currently active track stays visible —
+       everything else shrinks to nothing rather than being removed
+       from the DOM, so the swap between tracks (and the reveal of the
+       full list) can animate smoothly instead of popping. */
+    .wr-tracklist:not(.is-expanded) .wr-track:not(.is-active) {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-bottom-color: transparent;
+      pointer-events: none;
     }
     .wr-track-main {
       display: flex;
@@ -1066,6 +1130,33 @@
       display: block;
     }
     .wr-ctrl-btn:hover { opacity: 0.7; }
+
+    .wr-ctrl-btn--expand svg {
+      height: 45%;
+      width: auto;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .wr-ctrl-btn--expand.is-expanded svg {
+      transform: rotate(180deg);
+    }
+
+    .wr-spotify-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1.5rem;
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .wr-spotify-link svg { flex-shrink: 0; }
+    .wr-spotify-link:hover { opacity: 0.7; }
 
 
     /* ── Small screens: stack panels, page scrolls, logo turns white ── */
@@ -1241,9 +1332,11 @@
                     <button type="button" class="wr-ctrl-btn wr-ctrl-btn--play" id="wrPlayBtn" aria-label="Play">
                       <img id="wrPlayIcon" src="music-icons/icon-play.png" alt="">
                     </button>
-                    <a class="wr-ctrl-btn wr-ctrl-btn--plus" href="https://open.spotify.com/playlist/0XXOJH57JlfsukZGkiRdKz?si=GlIWVbt0RDirn-0_BI6dfg" target="_blank" rel="noopener noreferrer" aria-label="Open full playlist on Spotify">
-                      <img src="music-icons/icon-plus.png" alt="">
-                    </a>
+                    <button type="button" class="wr-ctrl-btn wr-ctrl-btn--expand" id="wrExpandBtn" aria-expanded="false" aria-controls="wrTracklist" aria-label="Show full tracklist">
+                      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M3.5 6L8 10.5L12.5 6" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
                   </div>
 
                   <div class="wr-progress-row" id="wrProgressRow">
@@ -1337,6 +1430,13 @@
                       <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b2735fbf6306df238e6b7356ac03" alt="">
                     </li>
                   </ol>
+
+                  <a class="wr-spotify-link" href="https://open.spotify.com/playlist/0XXOJH57JlfsukZGkiRdKz?si=GlIWVbt0RDirn-0_BI6dfg" target="_blank" rel="noopener noreferrer">
+                    Listen on Spotify
+                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M4 12L12 4M12 4H5.5M12 4V10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1742,6 +1842,50 @@
     wrReel.addEventListener('scroll', wrUpdateThumb);
     window.addEventListener('resize', wrUpdateThumb);
     wrUpdateThumb();
+  </script>
+
+  <!-- ── Tracklist expand/collapse: independent of the Spotify controller,
+       so it works even before the iFrame API finishes loading ── -->
+  <script>
+    const wrExpandBtn = document.getElementById('wrExpandBtn');
+    const wrTracklistEl = document.getElementById('wrTracklist');
+    const musicCardEl = document.querySelector('.cream-card--music');
+    const musicStackEl = document.querySelector('.music-stack');
+
+    function setTracklistExpanded(expanded) {
+      wrExpandBtn.classList.toggle('is-expanded', expanded);
+      wrExpandBtn.setAttribute('aria-expanded', String(expanded));
+      wrTracklistEl.classList.toggle('is-expanded', expanded);
+
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+      if (!isDesktop) return;
+
+      // FLIP: align-items/padding-top (toggled below via the
+      // .is-expanded classes) can't be transitioned directly, so
+      // measure the jump they cause and cancel it out with a
+      // transform, then release the transform next frame so
+      // .music-stack's own `transition: transform` eases it back to
+      // zero — reads as one continuous slide instead of a snap.
+      const first = musicStackEl.getBoundingClientRect();
+      musicCardEl.classList.toggle('is-expanded', expanded);
+      musicStackEl.classList.toggle('is-expanded', expanded);
+      const last = musicStackEl.getBoundingClientRect();
+      const deltaY = first.top - last.top;
+
+      if (deltaY) {
+        musicStackEl.style.transition = 'none';
+        musicStackEl.style.transform = `translateY(${deltaY}px)`;
+        musicStackEl.getBoundingClientRect(); // force reflow before releasing
+        requestAnimationFrame(() => {
+          musicStackEl.style.transition = '';
+          musicStackEl.style.transform = '';
+        });
+      }
+    }
+
+    wrExpandBtn.addEventListener('click', () => {
+      setTracklistExpanded(!wrTracklistEl.classList.contains('is-expanded'));
+    });
   </script>
 
   <!-- ── Spotify IFrame API: drives the custom player UI + CD spin ── -->
