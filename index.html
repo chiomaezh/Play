@@ -1956,6 +1956,17 @@
       // whole jump — released on the very next frame so only the
       // *real* move (to the hero-aligned target, or back to 0 on
       // collapse) animates via .music-stack's own transform transition.
+      //
+      // .cream-card--music also carries its own transform — set
+      // directly by the scroll handler (updateCreamTrack) to reveal
+      // tracklist overflow as the user scrolls, with no transition of
+      // its own. If that's left at a nonzero value here (e.g. the user
+      // had scrolled down before collapsing), it snaps back to 0
+      // separately and instantly once updateCreamTrack recalculates —
+      // reading as a second, disconnected motion on top of
+      // .music-stack's smooth one. Clearing it before "last" is
+      // captured folds that snap into the same FLIP measurement, so
+      // the whole thing cancels and releases as a single move.
       const first = isDesktop && musicStackEl ? musicStackEl.getBoundingClientRect() : null;
 
       wrExpandBtn.classList.toggle('is-expanded', expanded);
@@ -1967,6 +1978,7 @@
       if (!isDesktop) return; // Phone: normal document flow, nothing else to do.
 
       musicStackEl.style.transform = '';
+      if (musicCardEl) musicCardEl.style.transform = '';
       void musicStackEl.getBoundingClientRect(); // force reflow before measuring "last"
       const last = musicStackEl.getBoundingClientRect();
       const flipDelta = first ? first.top - last.top : 0;
@@ -1984,6 +1996,11 @@
         musicStackEl.style.transform = `translateY(${targetDelta}px)`;
       }
 
+      // Re-syncs the scroll-driven overflow transform on .cream-card
+      // --music for the tracklist's new (settled) height. Harmless to
+      // run right away even mid-FLIP: collapsing always resolves to 0
+      // overflow, and expanding starts from a scrollTop of 0, so this
+      // won't reintroduce the jump just cancelled above.
       if (window.wrUpdateCreamTrack) {
         window.wrUpdateCreamTrack();
         setTimeout(window.wrUpdateCreamTrack, 400);
