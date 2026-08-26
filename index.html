@@ -910,13 +910,22 @@
       .cream-card--music.is-expanded {
         align-items: flex-start;
         padding-top: 9rem;
-        /* No overflow-y here on purpose: giving the card its own
+        /* The base rule above clips its own content with
+           overflow:hidden — needed normally so the CD/heading don't
+           bleed past the card, but it was also silently clipping the
+           expanded tracklist past whatever fit in one viewport height,
+           regardless of the translateY the scroll handler applies
+           below. Switching to visible here means only the outer
+           .cream-viewport clips it, which is what actually lets the
+           translateY reveal the rest as the user scrolls. No
+           overflow-y:auto here on purpose: giving the card its own
            scroll context creates a second, nested scrollbar next to
            the cream column's real one. Instead, when the tracklist is
            too tall to fit, the JS scroll handler below (see
            updateCreamTrack) translates this card up in sync with the
            cream column's own scroll — same "one real scrollbar drives
            everything" pattern already used for the card-swap slide. */
+        overflow: visible;
       }
 
       .music-stack {
