@@ -916,6 +916,19 @@
            cream column's own scroll — same "one real scrollbar drives
            everything" pattern already used for the card-swap slide. */
         overflow: visible;
+        /* The base rule's align-items:center re-centers .music-stack
+           within the card every time its height changes — which
+           includes the tracklist growing underneath the progress bar
+           as it expands. Left at center, that auto-recentering keeps
+           dragging the already-positioned heading/CD/progress bar
+           upward throughout the whole expand animation, stacking on
+           top of the translateY the JS below applies to align with
+           the hero text — the two effects compound and the stack
+           overshoots far past its intended position. Pinning to the
+           top here means growing the tracklist only ever adds height
+           *below* the existing content, never moves it, so the JS
+           transform is the only thing repositioning the stack. */
+        align-items: flex-start;
       }
 
       .music-stack {
@@ -1897,9 +1910,26 @@
     // would keep re-running this mid-scroll and yanking the mobile
     // layout — which doesn't even use this transform — up toward the
     // hero section.
-    function updateMusicStackOffset() {
+    // Desktop only: computes how far .music-stack needs to move so the
+    // bottom of the progress bar lines up with the top of the hero
+    // paragraph on the wine side. Must be called with .music-stack's
+    // own transform cleared first (see callers below) so the
+    // measurement reflects its untransformed, flex-start-anchored
+    // position rather than compounding on top of a previous shift.
+    function computeHeroAlignDelta() {
       const heroLeadEl = document.querySelector('.hero-lead');
-      if (!musicStackEl || !heroLeadEl || !wrProgressRowEl) return;
+      if (!heroLeadEl || !wrProgressRowEl) return 0;
+      const targetY = heroLeadEl.getBoundingClientRect().top;
+      const currentBottom = wrProgressRowEl.getBoundingClientRect().bottom;
+      return targetY - currentBottom;
+    }
+
+    // Recomputes and re-applies the hero-alignment transform without
+    // any FLIP animation — used on resize, where there's no discrete
+    // class-toggle jump to compensate for, just a target position that
+    // may have moved.
+    function updateMusicStackOffset() {
+      if (!musicStackEl) return;
 
       const isDesktop = window.matchMedia('(min-width: 651px)').matches;
       if (!isDesktop || !musicStackEl.classList.contains('is-expanded')) {
@@ -1909,26 +1939,56 @@
 
       musicStackEl.style.transform = '';
       void musicStackEl.getBoundingClientRect(); // force reflow before measuring
-
-      const targetY = heroLeadEl.getBoundingClientRect().top;
-      const currentBottom = wrProgressRowEl.getBoundingClientRect().bottom;
-      const deltaY = targetY - currentBottom;
-
-      musicStackEl.style.transform = `translateY(${deltaY}px)`;
+      musicStackEl.style.transform = `translateY(${computeHeroAlignDelta()}px)`;
     }
 
     function setTracklistExpanded(expanded) {
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+
+      // FLIP: .cream-card--music.is-expanded switches align-items
+      // between center (collapsed) and flex-start (expanded) — see the
+      // CSS comment there for why. That switch is a discrete,
+      // non-animatable jump, though, so it's measured and compensated
+      // the same way the alignment mode used to be switched here:
+      // capture the position right before toggling the classes, then
+      // right after (with .music-stack's transform cleared, so this
+      // reflects pure layout, not a previous transform), and use the
+      // difference as a one-frame instant transform that cancels the
+      // jump — released on the very next frame so only the *real* move
+      // (to the hero-aligned target, or back to 0 on collapse) animates
+      // via .music-stack's own transform transition.
+      const first = isDesktop && musicStackEl ? musicStackEl.getBoundingClientRect() : null;
+
       wrExpandBtn.classList.toggle('is-expanded', expanded);
       wrExpandBtn.setAttribute('aria-expanded', String(expanded));
       wrTracklistEl.classList.toggle('is-expanded', expanded);
       musicCardEl.classList.toggle('is-expanded', expanded);
       musicStackEl.classList.toggle('is-expanded', expanded);
 
-      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
       if (!isDesktop) return; // Phone: normal document flow, nothing else to do.
 
-      updateMusicStackOffset();
-      if (window.wrUpdateCreamTrack) window.wrUpdateCreamTrack();
+      musicStackEl.style.transform = '';
+      void musicStackEl.getBoundingClientRect(); // force reflow before measuring "last"
+      const last = musicStackEl.getBoundingClientRect();
+      const flipDelta = first ? first.top - last.top : 0;
+      const targetDelta = expanded ? computeHeroAlignDelta() : 0;
+
+      if (flipDelta) {
+        musicStackEl.style.transition = 'none';
+        musicStackEl.style.transform = `translateY(${flipDelta}px)`;
+        musicStackEl.getBoundingClientRect(); // force reflow before releasing
+        requestAnimationFrame(() => {
+          musicStackEl.style.transition = '';
+          musicStackEl.style.transform = `translateY(${targetDelta}px)`;
+        });
+      } else {
+        musicStackEl.style.transform = `translateY(${targetDelta}px)`;
+      }
+
+      if (window.wrUpdateCreamTrack) {
+        window.wrUpdateCreamTrack();
+        setTimeout(window.wrUpdateCreamTrack, 400);
+      }
     }
 
     wrExpandBtn.addEventListener('click', () => {
