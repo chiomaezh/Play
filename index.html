@@ -1180,11 +1180,13 @@
     .wr-spotify-link {
       /* Only shown once the tracklist is expanded (see the sibling
          rule below) — it has no reason to appear above the single
-         collapsed/active track. */
+         collapsed/active track. Plain underlined text (same technique
+         as .start-link on About.html) rather than a flex row with a
+         separate SVG glyph — text-decoration only draws under actual
+         text, not under child SVGs/flex items, so keeping the arrow
+         as a text character lets the native underline cover it for
+         free, no border-bottom trick needed. */
       display: none;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 0.4rem;
       margin-top: 1.5rem;
       font-family: var(--font-body);
       font-weight: 400;
@@ -1194,20 +1196,16 @@
       color: var(--text);
       text-decoration: underline;
       text-underline-offset: 3px;
+      text-align: right;
     }
     .wr-tracklist.is-expanded ~ .wr-spotify-link {
-      display: inline-flex;
+      display: block;
     }
-    /* text-decoration on the link only underlines the text run — the
-       arrow is a flex item (an SVG), and flex items don't inherit the
-       parent's underline the way inline text does. border-bottom
-       redraws the same underline under the icon, at the same 3px
-       offset as text-underline-offset above, so the line reads as
-       one continuous rule under both. */
-    .wr-spotify-link svg {
-      flex-shrink: 0;
-      padding-bottom: 3px;
-      border-bottom: 1px solid currentColor;
+    /* Arrow glyph at 1.1x the link text's own size (13px), matching
+       the original SVG icon's 12px size scaled up by 1.1x = 13.2px. */
+    .wr-spotify-link .wr-spotify-arrow {
+      display: inline-block;
+      font-size: 13.2px;
     }
     .wr-spotify-link:hover { opacity: 0.7; }
 
@@ -1491,12 +1489,7 @@
                     </li>
                   </ol>
 
-                  <a class="wr-spotify-link" href="https://open.spotify.com/playlist/0XXOJH57JlfsukZGkiRdKz?si=GlIWVbt0RDirn-0_BI6dfg" target="_blank" rel="noopener noreferrer">
-                    Listen on Spotify
-                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M4 12L12 4M12 4H5.5M12 4V10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </a>
+                  <a class="wr-spotify-link" href="https://open.spotify.com/playlist/0XXOJH57JlfsukZGkiRdKz?si=GlIWVbt0RDirn-0_BI6dfg" target="_blank" rel="noopener noreferrer">Listen on Spotify <span class="wr-spotify-arrow">↗</span></a>
                 </div>
               </div>
             </div>
