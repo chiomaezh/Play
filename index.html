@@ -934,6 +934,19 @@
       .music-stack {
         transition: transform 0.4s ease;
       }
+
+      /* Heading + CD disappear the instant the tracklist expands (and
+         reappear the instant it collapses) — no fade, just gone, same
+         as everything else in this codebase's phone-mode "no special
+         transition" philosophy. The FLIP logic in setTracklistExpanded
+         already measures whatever layout jump this causes (on top of
+         the align-items switch above) and folds it into the same
+         one-frame cancel-then-release, so nothing extra is needed here
+         to keep it smooth. */
+      .music-stack.is-expanded .music-heading,
+      .music-stack.is-expanded .cd-stack {
+        display: none;
+      }
     }
 
     @keyframes spin-cd {
@@ -1893,35 +1906,20 @@
     const wrTracklistEl = document.getElementById('wrTracklist');
     const musicCardEl = document.querySelector('.cream-card--music');
     const musicStackEl = document.querySelector('.music-stack');
-    const wrProgressRowEl = document.getElementById('wrProgressRow');
+    const wrControlsEl = document.querySelector('.wr-controls');
 
-    // Desktop only: positions the whole .music-stack (heading, CD,
-    // controls, progress bar, tracklist — moved as a single rigid
-    // block) so the bottom of the progress bar lines up with the top
-    // of the hero paragraph on the wine side. This only needs to run
-    // once per toggle: nothing above the progress bar (heading, CD,
-    // controls) changes size when the tracklist expands, so its
-    // position is already correct before the tracklist's own reveal
-    // animation even starts.
-    //
-    // Must stay a no-op on phone: phone browsers fire 'resize' just
-    // from scrolling (the URL bar showing/hiding changes
-    // window.innerHeight), so without this guard the listener below
-    // would keep re-running this mid-scroll and yanking the mobile
-    // layout — which doesn't even use this transform — up toward the
-    // hero section.
     // Desktop only: computes how far .music-stack needs to move so the
-    // bottom of the progress bar lines up with the top of the hero
-    // paragraph on the wine side. Must be called with .music-stack's
-    // own transform cleared first (see callers below) so the
-    // measurement reflects its untransformed, flex-start-anchored
+    // top of the controls row (prev/play/next/expand) lines up with the
+    // top of the hero paragraph on the wine side. Must be called with
+    // .music-stack's own transform cleared first (see callers below) so
+    // the measurement reflects its untransformed, flex-start-anchored
     // position rather than compounding on top of a previous shift.
     function computeHeroAlignDelta() {
       const heroLeadEl = document.querySelector('.hero-lead');
-      if (!heroLeadEl || !wrProgressRowEl) return 0;
+      if (!heroLeadEl || !wrControlsEl) return 0;
       const targetY = heroLeadEl.getBoundingClientRect().top;
-      const currentBottom = wrProgressRowEl.getBoundingClientRect().bottom;
-      return targetY - currentBottom;
+      const currentTop = wrControlsEl.getBoundingClientRect().top;
+      return targetY - currentTop;
     }
 
     // Recomputes and re-applies the hero-alignment transform without
@@ -1945,18 +1943,19 @@
     function setTracklistExpanded(expanded) {
       const isDesktop = window.matchMedia('(min-width: 651px)').matches;
 
-      // FLIP: .cream-card--music.is-expanded switches align-items
-      // between center (collapsed) and flex-start (expanded) — see the
-      // CSS comment there for why. That switch is a discrete,
-      // non-animatable jump, though, so it's measured and compensated
-      // the same way the alignment mode used to be switched here:
-      // capture the position right before toggling the classes, then
-      // right after (with .music-stack's transform cleared, so this
+      // FLIP: toggling .is-expanded here causes two discrete,
+      // non-animatable layout jumps at once — .cream-card--music
+      // switches align-items between center/flex-start (see its CSS
+      // comment), and the heading + CD instantly disappear (see
+      // .music-stack.is-expanded CSS). Rather than choreograph those
+      // separately, this just measures the combined effect: capture
+      // the position right before toggling the classes, then right
+      // after (with .music-stack's transform cleared, so this
       // reflects pure layout, not a previous transform), and use the
       // difference as a one-frame instant transform that cancels the
-      // jump — released on the very next frame so only the *real* move
-      // (to the hero-aligned target, or back to 0 on collapse) animates
-      // via .music-stack's own transform transition.
+      // whole jump — released on the very next frame so only the
+      // *real* move (to the hero-aligned target, or back to 0 on
+      // collapse) animates via .music-stack's own transform transition.
       const first = isDesktop && musicStackEl ? musicStackEl.getBoundingClientRect() : null;
 
       wrExpandBtn.classList.toggle('is-expanded', expanded);
