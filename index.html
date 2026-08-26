@@ -1192,6 +1192,10 @@
       letter-spacing: 1px;
       text-transform: uppercase;
       color: var(--text);
+      /* Anchors are underlined by default in the browser's own
+         stylesheet — without this, that default line and the
+         .wr-spotify-text underline below both render, stacked. */
+      text-decoration: none;
     }
     .wr-tracklist.is-expanded ~ .wr-spotify-link {
       display: inline-flex;
