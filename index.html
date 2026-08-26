@@ -2061,6 +2061,15 @@
           baseTimestamp = performance.now();
           progressThumb.style.width = '0%';
           timerEl.textContent = '-00:00';
+          // A freshly loaded URI has nothing playing yet — reset this
+          // now rather than waiting for the API's own playback_update.
+          // Without it, isPausedState is still whatever the *previous*
+          // track reported, and if that was "playing" (false),
+          // requestAutoplay's very first check below reads it as
+          // "already playing" and never calls play() on the new track
+          // at all — leaving it loaded but silent until the pause
+          // button is clicked (which then actually starts it).
+          isPausedState = true;
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
           if (autoplay) requestAutoplay(currentIndex);
         }
@@ -2117,8 +2126,8 @@
           playRequestToken++;
           EmbedController.togglePlay();
         });
-        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, true));
-        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, true));
+        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, !isPausedState));
+        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, !isPausedState));
 
         trackEls.forEach((el, i) => {
           el.addEventListener('click', () => loadTrack(i, true));
