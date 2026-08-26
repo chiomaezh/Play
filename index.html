@@ -356,6 +356,14 @@
       scroll-behavior: smooth;
       scroll-snap-type: y mandatory;
     }
+    /* Paused while the tracklist is expanded and overflowing, so
+       mandatory snap doesn't fight the user trying to scroll through
+       the extra tracks (there's no snap point partway down the
+       overflow region — see trackOverflowSpacer). Restored once the
+       tracklist collapses again. */
+    .cream-col.tracklist-scroll-active {
+      scroll-snap-type: none;
+    }
 
     /* Pinned window onto the horizontal track: stays put at the top of
        the scrollport for the whole scrollable range, so scrolling
@@ -394,6 +402,17 @@
       height: 100%;
       scroll-snap-align: start;
       scroll-snap-stop: always;
+    }
+
+    /* Height is set in px by JS, only while the tracklist is expanded
+       and taller than the viewport — see updateCreamTrack(). Zero
+       otherwise, so it's a no-op the rest of the time. Intentionally
+       has no scroll-snap-align: it's scrolled through freely rather
+       than snapped to (scroll-snap-type is paused for the same span —
+       see .cream-col.tracklist-scroll-active). */
+    .cream-track-overflow-spacer {
+      width: 100%;
+      height: 0;
     }
 
     .cream-track {
@@ -891,10 +910,13 @@
       .cream-card--music.is-expanded {
         align-items: flex-start;
         padding-top: 9rem;
-        /* Safety net: if an unusually tall tracklist still doesn't fit
-           the viewport-height card, this keeps it reachable instead of
-           silently clipping it. */
-        overflow-y: auto;
+        /* No overflow-y here on purpose: giving the card its own
+           scroll context creates a second, nested scrollbar next to
+           the cream column's real one. Instead, when the tracklist is
+           too tall to fit, the JS scroll handler below (see
+           updateCreamTrack) translates this card up in sync with the
+           cream column's own scroll — same "one real scrollbar drives
+           everything" pattern already used for the card-swap slide. */
       }
 
       .music-stack {
@@ -1132,7 +1154,7 @@
     .wr-ctrl-btn:hover { opacity: 0.7; }
 
     .wr-ctrl-btn--expand svg {
-      height: 45%;
+      height: 100%;
       width: auto;
       display: block;
       transition: transform 0.3s ease;
@@ -1142,7 +1164,10 @@
     }
 
     .wr-spotify-link {
-      display: inline-flex;
+      /* Only shown once the tracklist is expanded (see the sibling
+         rule below) — it has no reason to appear above the single
+         collapsed/active track. */
+      display: none;
       align-items: center;
       gap: 0.4rem;
       margin-top: 1.5rem;
@@ -1154,6 +1179,9 @@
       color: var(--text);
       text-decoration: underline;
       text-underline-offset: 3px;
+    }
+    .wr-tracklist.is-expanded ~ .wr-spotify-link {
+      display: inline-flex;
     }
     .wr-spotify-link svg { flex-shrink: 0; }
     .wr-spotify-link:hover { opacity: 0.7; }
@@ -1202,7 +1230,8 @@
         display: contents;
       }
       .cream-snap-top,
-      .cream-snap-spacer {
+      .cream-snap-spacer,
+      .cream-track-overflow-spacer {
         display: none;
       }
       .cream-card {
@@ -1494,6 +1523,12 @@
           </div>
         </div>
       </div>
+      <!-- Extra scroll room added on the fly (desktop only) whenever the
+           expanded tracklist is taller than the viewport — see
+           updateCreamTrack(). Keeps the cream column's own scrollbar as
+           the single scrollbar for reading the full tracklist, instead
+           of giving the music card a second, nested one. -->
+      <div class="cream-track-overflow-spacer" id="trackOverflowSpacer" aria-hidden="true"></div>
       <div class="cream-snap-spacer" aria-hidden="true"></div>
       <div class="cream-snap-spacer" aria-hidden="true"></div>
     </div>
@@ -1881,6 +1916,17 @@
           musicStackEl.style.transform = '';
         });
       }
+
+      // Recalculate how much (if any) extra scroll room the cream
+      // column needs for the tracklist's new height. Called once now
+      // (covers collapsing, which shrinks instantly) and again after
+      // the expand transition finishes (covers expanding, since the
+      // tracklist grows over ~0.35s and its true final height isn't
+      // measurable until that settles).
+      if (window.wrUpdateCreamTrack) {
+        window.wrUpdateCreamTrack();
+        setTimeout(window.wrUpdateCreamTrack, 400);
+      }
     }
 
     wrExpandBtn.addEventListener('click', () => {
@@ -2166,18 +2212,54 @@
     (function () {
       const creamCol = document.getElementById('creamCol');
       const creamTrack = document.getElementById('creamTrack');
+      const creamViewportEl = document.querySelector('.cream-viewport');
+      const musicCardEl = document.querySelector('.cream-card--music');
+      const overflowSpacer = document.getElementById('trackOverflowSpacer');
       if (!creamCol || !creamTrack) return;
+
+      // How much taller the music card is than the viewport right now
+      // — only non-zero on desktop, while the tracklist is expanded,
+      // and only when it genuinely doesn't fit.
+      function getTrackOverflow() {
+        const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+        if (!isDesktop || !musicCardEl || !creamViewportEl) return 0;
+        if (!musicCardEl.classList.contains('is-expanded')) return 0;
+        return Math.max(0, musicCardEl.scrollHeight - creamViewportEl.clientHeight);
+      }
 
       function updateCreamTrack() {
         const isDesktop = window.matchMedia('(min-width: 651px)').matches;
         if (!isDesktop) {
           creamTrack.style.transform = '';
+          if (musicCardEl) musicCardEl.style.transform = '';
+          if (overflowSpacer) overflowSpacer.style.height = '0px';
+          creamCol.classList.remove('tracklist-scroll-active');
           return;
         }
+
+        const overflowPx = getTrackOverflow();
+        if (overflowSpacer) overflowSpacer.style.height = overflowPx + 'px';
+        // Mandatory scroll-snap only has a snap point at the very top
+        // and at the start of the next card, so while there's overflow
+        // room to scroll through, snapping is paused — otherwise it
+        // fights the user reading down the tracklist.
+        creamCol.classList.toggle('tracklist-scroll-active', overflowPx > 0);
+
         const pageHeight = creamCol.clientHeight;
+        const scrollTop = creamCol.scrollTop;
+
+        // First, consume the tracklist's own overflow: the music card
+        // slides up in place, revealing the rest of the tracklist,
+        // before any card-to-card progress is allowed to start.
+        const musicPhase = Math.min(scrollTop, overflowPx);
+        if (musicCardEl) {
+          musicCardEl.style.transform = musicPhase ? `translateY(-${musicPhase}px)` : '';
+        }
+
         // 0 = music card, 1 = games card, 2 = blank card.
+        const remainingScroll = Math.max(0, scrollTop - overflowPx);
         const pageFloat = pageHeight > 0
-          ? Math.min(2, Math.max(0, creamCol.scrollTop / pageHeight))
+          ? Math.min(2, Math.max(0, remainingScroll / pageHeight))
           : 0;
         const xProgress = Math.min(1, pageFloat);           // music → games
         const yProgress = Math.max(0, Math.min(1, pageFloat - 1)); // games → blank
@@ -2187,6 +2269,10 @@
       creamCol.addEventListener('scroll', updateCreamTrack, { passive: true });
       window.addEventListener('resize', updateCreamTrack);
       updateCreamTrack();
+
+      // Exposed so the tracklist expand/collapse handler can trigger a
+      // recalculation as soon as the card's height changes.
+      window.wrUpdateCreamTrack = updateCreamTrack;
     })();
   </script>
 
