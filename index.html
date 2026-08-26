@@ -1890,11 +1890,19 @@
     // controls) changes size when the tracklist expands, so its
     // position is already correct before the tracklist's own reveal
     // animation even starts.
+    //
+    // Must stay a no-op on phone: phone browsers fire 'resize' just
+    // from scrolling (the URL bar showing/hiding changes
+    // window.innerHeight), so without this guard the listener below
+    // would keep re-running this mid-scroll and yanking the mobile
+    // layout — which doesn't even use this transform — up toward the
+    // hero section.
     function updateMusicStackOffset() {
       const heroLeadEl = document.querySelector('.hero-lead');
       if (!musicStackEl || !heroLeadEl || !wrProgressRowEl) return;
 
-      if (!musicStackEl.classList.contains('is-expanded')) {
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+      if (!isDesktop || !musicStackEl.classList.contains('is-expanded')) {
         musicStackEl.style.transform = '';
         return;
       }
