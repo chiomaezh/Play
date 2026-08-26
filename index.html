@@ -2063,6 +2063,17 @@
       // position at/near 0, so that's what's waited for below.
       let expectingFreshTrack = false;
 
+      // A seek issued while the track is paused/not-yet-playing (e.g.
+      // dragging the bar right after loading a new track, before ever
+      // hitting play) — Spotify's embed silently ignores EmbedController
+      // .seek() called before playback has actually started, so it would
+      // otherwise still start from 0 the moment play is pressed. This
+      // remembers the target position so it can be re-issued once
+      // playback_update confirms audio has genuinely begun. See the
+      // pointerup handler (where it's set) and the playback_update
+      // listener (where it's consumed) below.
+      let pendingSeekMs = null;
+
       // Set once loadTrack() exists (inside the createController
       // callback below); tickProgress needs a way to trigger the next
       // track without being nested inside that closure itself.
@@ -2140,6 +2151,7 @@
           lastPlayingPosition = 0;
           lastPlayingDuration = 0;
           expectingFreshTrack = true;
+          pendingSeekMs = null;
           setActiveTrack(currentIndex);
           progressPlaying = false;
           basePosition = 0;
@@ -2190,6 +2202,7 @@
           cdImage.classList.toggle('playing', !isPaused);
           playIcon.src = isPaused ? ICON_PLAY : ICON_PAUSE;
           playBtn.setAttribute('aria-label', isPaused ? 'Play' : 'Pause');
+          const wasPaused = isPausedState;
           isPausedState = isPaused;
 
           // Some updates — particularly the one where isPaused flips to
@@ -2212,6 +2225,23 @@
             basePosition = position;
             baseTimestamp = performance.now();
             renderProgress(position, duration);
+          }
+
+          // Playback has just genuinely started (as opposed to a
+          // periodic update while already playing) — if the person
+          // dragged the bar while the track was paused, this is the
+          // moment to actually apply that seek. Spotify ignored the
+          // seek() call issued back when they dragged (it silently
+          // no-ops before playback begins), so without this the track
+          // would otherwise start over from 0 despite the bar already
+          // showing the dragged-to position.
+          if (wasPaused && !isPaused && pendingSeekMs != null) {
+            const seekMs = pendingSeekMs;
+            pendingSeekMs = null;
+            EmbedController.seek(seekMs / 1000);
+            basePosition = seekMs;
+            baseTimestamp = performance.now();
+            renderProgress(seekMs, currentDurationMs);
           }
 
           // The iFrame API has no explicit "ended" event, so infer it.
@@ -2284,9 +2314,15 @@
           progressHit.releasePointerCapture(e.pointerId);
           const ratio = ratioFromClientX(e.clientX);
           if (currentDurationMs > 0) {
-            basePosition = ratio * currentDurationMs;
+            const seekMs = ratio * currentDurationMs;
+            basePosition = seekMs;
             baseTimestamp = performance.now();
-            EmbedController.seek((ratio * currentDurationMs) / 1000);
+            EmbedController.seek(seekMs / 1000);
+            // Paused/not-yet-playing: Spotify ignores that seek() call
+            // above until playback actually starts, so remember the
+            // target and re-issue it once the playback_update listener
+            // sees play actually begin (see there for why).
+            pendingSeekMs = isPausedState ? seekMs : null;
           }
         });
         progressHit.addEventListener('pointercancel', () => { dragging = false; });
