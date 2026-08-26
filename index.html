@@ -1363,7 +1363,7 @@
                   </div>
 
                   <div class="wr-progress-row" id="wrProgressRow">
-                    <div class="wr-progress-hit" id="wrProgressHit">
+                    <div class="wr-progress-hit is-seekable" id="wrProgressHit">
                       <div class="wr-progress-track">
                         <div class="wr-progress-thumb" id="wrProgressThumb"></div>
                       </div>
@@ -1973,12 +1973,6 @@
       const ICON_PLAY = 'music-icons/icon-play.png';
       const ICON_PAUSE = 'music-icons/icon-pause.png';
 
-      // A preview clip (no Premium session logged into Spotify in this
-      // browser) always plays a fixed ~30s snippet, so any duration at
-      // or under that is treated as preview mode and the progress bar
-      // (which needs a real, seekable duration) stays hidden.
-      const PREVIEW_MAX_MS = 31000;
-
       let currentIndex = 0;
       let currentDurationMs = 0;
       let dragging = false;
@@ -1999,6 +1993,21 @@
       let isPausedState = true;
       let playRequestToken = 0;
 
+      // Right after a track loads (skip/select, or the auto-advance on
+      // natural end below), the iFrame API can still deliver one or two
+      // playback_update events describing the track we just moved away
+      // from — a known Spotify quirk where position/duration briefly lag
+      // behind the real, newly-loaded track. Left unchecked, those stale
+      // events stomp the fresh 0:00 state loadTrack() just set. The
+      // genuine first update for a freshly-loaded track always reports a
+      // position at/near 0, so that's what's waited for below.
+      let expectingFreshTrack = false;
+
+      // Set once loadTrack() exists (inside the createController
+      // callback below); tickProgress needs a way to trigger the next
+      // track without being nested inside that closure itself.
+      let trackAdvanceHandler = null;
+
       function renderProgress(positionMs, durationMs) {
         if (durationMs > 0) {
           progressThumb.style.width = Math.min(100, (positionMs / durationMs) * 100) + '%';
@@ -2011,6 +2020,21 @@
           const elapsed = performance.now() - baseTimestamp;
           const position = Math.min(currentDurationMs, basePosition + elapsed);
           renderProgress(position, currentDurationMs);
+
+          // Fallback "ended" detection, driven by our own interpolated
+          // clock rather than waiting on another playback_update from
+          // Spotify. The iFrame API doesn't reliably fire a final
+          // isPaused:true update once a track (especially a preview
+          // clip) actually finishes — when that happens the
+          // listener-based check below never runs, and the track just
+          // sits there: CD still spinning, timer frozen at 00:00, next
+          // track never selected. Advancing here as soon as our own
+          // clock reaches the track's duration fixes that regardless of
+          // whether Spotify ever tells us it stopped.
+          if (!trackEnded && trackAdvanceHandler && (currentDurationMs - position) <= 250) {
+            trackEnded = true;
+            trackAdvanceHandler();
+          }
         }
         requestAnimationFrame(tickProgress);
       }
@@ -2055,6 +2079,7 @@
           trackEnded = false;
           lastPlayingPosition = 0;
           lastPlayingDuration = 0;
+          expectingFreshTrack = true;
           setActiveTrack(currentIndex);
           progressPlaying = false;
           basePosition = 0;
@@ -2087,9 +2112,20 @@
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
           if (autoplay) requestAutoplay(currentIndex);
         }
+        trackAdvanceHandler = () => loadTrack(currentIndex + 1, true);
 
         EmbedController.addListener('playback_update', (e) => {
           const { isPaused, position, duration } = e.data;
+
+          // Discard updates that still belong to the track we just
+          // navigated away from — see the expectingFreshTrack comment
+          // above. Wait for the first update whose position is close to
+          // 0 (the genuine signature of a just-loaded track) before
+          // trusting anything it says.
+          if (expectingFreshTrack) {
+            if (position > 1500) return;
+            expectingFreshTrack = false;
+          }
 
           cdImage.classList.toggle('playing', !isPaused);
           playIcon.src = isPaused ? ICON_PLAY : ICON_PAUSE;
@@ -2100,12 +2136,15 @@
           // true — report duration as 0/undefined even mid-track (see
           // the "ended" comment below for the same quirk with
           // position). Only trust duration when it's a real value, so a
-          // pause doesn't wipe out currentDurationMs/is-seekable and
-          // make the bar un-draggable until playback resumes.
+          // pause doesn't wipe out currentDurationMs.
+          //
+          // Seeking itself is always available now (.is-seekable is set
+          // permanently in markup) — previews used to be blocked below
+          // on the assumption Spotify couldn't seek within a preview
+          // clip, but that assumption doesn't hold and just left the
+          // bar dead for anyone not logged into Spotify.
           if (duration > 0) {
             currentDurationMs = duration;
-            const isPreview = duration <= PREVIEW_MAX_MS;
-            progressHit.classList.toggle('is-seekable', !isPreview);
           }
 
           progressPlaying = !isPaused;
@@ -2167,7 +2206,6 @@
         }
 
         progressHit.addEventListener('pointerdown', (e) => {
-          if (!progressHit.classList.contains('is-seekable')) return;
           dragging = true;
           progressHit.setPointerCapture(e.pointerId);
           const ratio = ratioFromClientX(e.clientX);
