@@ -2070,6 +2070,20 @@
           // at all — leaving it loaded but silent until the pause
           // button is clicked (which then actually starts it).
           isPausedState = true;
+          // Reflect "not playing" immediately on a manual skip/select,
+          // rather than waiting on the API's own playback_update to
+          // report it — without this the pause icon/spinning CD would
+          // hang over from the previous track until that event arrives.
+          // Skipped when autoplay is true (natural end-of-track only,
+          // now that manual skip never autoplays) since the icon/CD
+          // are already correctly showing "playing" from the track
+          // that just finished, and resetting then immediately
+          // flipping back would just flicker.
+          if (!autoplay) {
+            cdImage.classList.remove('playing');
+            playIcon.src = ICON_PLAY;
+            playBtn.setAttribute('aria-label', 'Play');
+          }
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
           if (autoplay) requestAutoplay(currentIndex);
         }
@@ -2126,15 +2140,23 @@
           playRequestToken++;
           EmbedController.togglePlay();
         });
-        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, !isPausedState));
-        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, !isPausedState));
+        // Manual skip/select never autoplays — loading a new URI and
+        // then immediately forcing play() on it is unreliable in the
+        // Spotify embed (the retry-until-it-sticks workaround in
+        // requestAutoplay papers over that, but still causes stalls/
+        // buffering on the next track). Only a track finishing on its
+        // own (see the "ended" handling above) autoplays the next one;
+        // any manual skip or track selection just loads and waits for
+        // the person to hit play.
+        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, false));
+        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, false));
 
         trackEls.forEach((el, i) => {
-          el.addEventListener('click', () => loadTrack(i, true));
+          el.addEventListener('click', () => loadTrack(i, false));
           el.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              loadTrack(i, true);
+              loadTrack(i, false);
             }
           });
         });
