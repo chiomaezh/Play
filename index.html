@@ -2138,17 +2138,6 @@
       // listener (where it's consumed) below.
       let pendingSeekMs = null;
 
-      // A track requested to autoplay (natural end-of-track, or a manual
-      // skip/select made while something was already playing) whose
-      // EmbedController.play() call is deferred until we actually know
-      // the new track has loaded — see the expectingFreshTrack block in
-      // the playback_update listener, where this is consumed. Calling
-      // play() blindly right after loadUri() (before Spotify has
-      // finished swapping tracks) is the unreliable case the comment on
-      // requestAutoplay below describes; waiting for the genuine first
-      // update for the new track avoids racing that load entirely.
-      let pendingAutoplayIndex = null;
-
       // Set once loadTrack() exists (inside the createController
       // callback below); tickProgress needs a way to trigger the next
       // track without being nested inside that closure itself.
@@ -2214,17 +2203,15 @@
       }
 
       const callback = (EmbedController) => {
-        // Called once we've confirmed (via the fresh-track update in the
-        // playback_update listener below) that the new track has
-        // actually loaded — calling EmbedController.play() any earlier
-        // than that, e.g. right after loadUri(), is unreliable and the
-        // embed silently ignores it (a known quirk of Spotify's iframe
-        // player). Even at this point a single call can still be
-        // dropped, so we keep re-issuing play() a few times, a little
-        // further apart each time, until playback actually starts — but
-        // only for the track that requested it, and only until the user
-        // does something else (manual play/pause, skip, seek) which
-        // invalidates the request.
+        // Calling EmbedController.play() immediately after loadUri() is
+        // unreliable — the embed sometimes silently ignores it (a known
+        // quirk of Spotify's iframe player), so a track can advance but
+        // then just sit there paused instead of continuing to play. To
+        // work around it, we keep re-issuing play() a few times, a
+        // little further apart each time, until playback actually
+        // starts — but only for the track that requested it, and only
+        // until the user does something else (manual play/pause, skip,
+        // seek) which invalidates the request.
         function requestAutoplay(index) {
           const token = ++playRequestToken;
           const tryPlay = (attempt) => {
@@ -2274,7 +2261,7 @@
             playBtn.setAttribute('aria-label', 'Play');
           }
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
-          pendingAutoplayIndex = autoplay ? currentIndex : null;
+          if (autoplay) requestAutoplay(currentIndex);
         }
         trackAdvanceHandler = () => loadTrack(currentIndex + 1, true);
 
@@ -2289,16 +2276,6 @@
           if (expectingFreshTrack) {
             if (position > 1500) return;
             expectingFreshTrack = false;
-            // The new track is now confirmed loaded — this is the right
-            // moment to actually issue play(), rather than immediately
-            // after loadUri() (see pendingAutoplayIndex above).
-            if (pendingAutoplayIndex === currentIndex) {
-              const idx = pendingAutoplayIndex;
-              pendingAutoplayIndex = null;
-              requestAutoplay(idx);
-            } else {
-              pendingAutoplayIndex = null;
-            }
           }
 
           cdImage.classList.toggle('playing', !isPaused);
