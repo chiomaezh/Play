@@ -2521,4 +2521,2527 @@
   </script>
 
 </body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="/favicon-play.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#170006" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <link rel="stylesheet" href="https://use.typekit.net/bwp0bbg.css">
+
+  <title>PLAY — Games for Brand People</title>
+  <meta name="description" content="A London-based creative consultancy offering strategy, production, and design for culture-shaping presence and storytelling." />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      /* Safari's chrome-tinting (status bar, the bottom URL pill)
+         only reliably reads a flat background-color — a gradient
+         here doesn't get picked up and falls back to white. A solid
+         color still bleeds correctly at each edge because Safari
+         also samples the actual solid-colored sections underneath as
+         you scroll (wine hero at the top, cream footer card at the
+         bottom), so this alone is enough to get wine-top/cream-
+         bottom without needing a gradient. */
+      background-color: var(--wine);
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    :root {
+      --bg: #FAFBE3;
+      --text: #211D1D;
+      --wine: #170006;
+      --border: #423A3A;
+      --font-body: 'owners-text', sans-serif;
+      --font-mono: 'gemeli-mono', serif;
+    }
+
+    ::selection { background: rgba(183, 184, 168, 0.4); }
+    ::-moz-selection { background: rgba(183, 184, 168, 0.4); }
+
+    body {
+      font-family: var(--font-body);
+      font-weight: 350;
+      color: var(--text);
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    /* ── Fixed viewfinder: grid of wine-top / wine-bottom / cream ── */
+    .viewfinder {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      grid-template-areas:
+        "top    right"
+        "bottom right";
+    }
+
+    .wine-block {
+      background: var(--wine);
+      height: 100%;
+      min-height: 0;
+      position: relative;
+    }
+    .wine-block--top { grid-area: top; }
+    .wine-block--bottom {
+      grid-area: bottom;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-direction: column;
+      padding-bottom: 1.5rem;
+      min-width: 0;
+    }
+
+    /* ── Hero copy, top wine block ── */
+    .hero-text {
+      padding: 6.5rem 1.5rem 2rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-top: 0;
+      text-align: right;
+      transition: margin-top 0.25s ease;
+    }
+    .hero-lead,
+    .hero-body {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 17.5px;
+      line-height: 1.7;
+      color: var(--bg);
+    }
+    .hero-lead { margin-bottom: 0.75rem; }
+
+    /* Desktop: the accordion push uses a transform instead of
+       margin-top. Margin forces the grid row to grow to fit the
+       content, and since the cream column spans both rows, growing the
+       top row drags the cream side down with it (and clipping the
+       overflow instead just cuts the hero text off). A transform never
+       affects layout/track sizing, so it only visually shifts the wine
+       side. The weather reel below gets the same transform so it moves
+       down in sync and never gets covered by the hero text. */
+    @media (min-width: 651px) {
+      .hero-text {
+        padding: 9rem 2.5rem 2rem;
+        transition: transform 0.25s ease;
+        transform: translateY(0);
+      }
+      .clocks-wrap {
+        transition: transform 0.25s ease;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── World clocks, bottom wine block: sideways-scrolling reel ── */
+    .clocks-wrap {
+      width: 100%;
+      min-width: 0;
+      padding: 3rem 1.5rem 1rem;
+    }
+
+    .weather-reel {
+      display: flex;
+      min-width: 0;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .weather-reel::-webkit-scrollbar { display: none; }
+    .weather-reel.is-ready { opacity: 1; }
+
+    /* Each block: city / time / weather, stacked — same font-family,
+       weights, letter-spacing and colour as the .ba-* weather blocks
+       on the About page. Width is set via JS to the widest natural
+       content across all cards, so every card is the same fixed
+       "card" size and nothing overflows. */
+    .wr-block {
+      flex: 0 0 auto;
+      box-sizing: border-box;
+      padding: 0 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .wr-city-name {
+      display: block;
+      width: 100%;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 9.8px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--bg);
+    }
+    .wr-city-inner {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .wr-city-name--small {
+      font-size: 9.3px !important;
+    }
+    .wr-city-time {
+      display: block;
+      width: 100%;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 31px;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+      color: var(--bg);
+      margin-top: 8px;
+    }
+    .wr-time-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      width: 100%;
+    }
+    .wr-city-weather {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 8px;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 22px;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+      color: var(--bg);
+      white-space: nowrap;
+    }
+    /* Error state: retry button + "UPDATE / WEATHER" label pushed to the
+       right edge of the cell, both bottom-aligned with each other. */
+    .wr-city-weather.is-error {
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .wr-city-weather.is-error [data-icon] {
+      order: 2;
+    }
+    .wr-city-weather.is-error .wr-refresh-text {
+      order: 1;
+    }
+    .wr-refresh-text {
+      display: none;
+      flex-direction: column;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 10px;
+      line-height: 1.15;
+      letter-spacing: 0.5px;
+      text-transform: lowercase;
+      text-align: left;
+      color: var(--bg);
+      white-space: normal;
+    }
+    .wr-city-weather.is-error .wr-refresh-text {
+      display: flex;
+    }
+    .wr-icon {
+      display: inline-block;
+      width: 25px;
+      height: 25px;
+    }
+    .wr-icon img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+    /* Clickable retry — only appears in place of the icon when the weather
+       fetch has failed. Same pattern as the Home page's station-refresh-btn:
+       sized to fill .wr-icon exactly, hairline stroke, no fill. Uses
+       var(--bg) rather than var(--text) here since this section's icons
+       sit on the wine background, not the cream one. */
+    .wr-refresh-btn {
+      display: block;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    .wr-refresh-btn svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      stroke: var(--bg);
+      stroke-width: 1.4;
+      stroke-linecap: butt;
+      stroke-linejoin: miter;
+      fill: none;
+      shape-rendering: geometricPrecision;
+    }
+
+    /* Typeform-style progress bar: thin track + filled thumb showing
+       scroll position, draggable to scroll the reel. The visible bar
+       stays 3px, but a padded, invisible "hit" wrapper around it is
+       what actually receives clicks/drags, so it's easy to grab
+       without changing how thin it looks. */
+    .weather-scrollbar-hit {
+      width: 100%;
+      padding: 14px 0;
+      margin-top: 0.8rem;
+      cursor: pointer;
+      touch-action: none;
+    }
+    .weather-scrollbar-track {
+      position: relative;
+      width: 100%;
+      height: 3px;
+      background: rgba(250, 251, 227, 0.25);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .weather-scrollbar-thumb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--bg);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    @media (min-width: 651px) {
+      .clocks-wrap { padding: 2.5rem; }
+      .wr-block { padding: 0 14px; }
+      .wr-city-name { font-size: 9.7px; }
+      .wr-city-name--small { font-size: 9.2px !important; }
+      .wr-city-time { font-size: 26.5px; }
+      .wr-city-weather { font-size: 18px; }
+      .wr-icon { width: 22px; height: 22px; }
+      .weather-scrollbar-hit { margin-top: 1rem; }
+    }
+
+    /* ── Tagline row, below the scrollbar ── */
+    .weather-tagline {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      width: 100%;
+      margin-top: 0.8rem;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 14px;
+      line-height: 1.1;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--bg);
+    }
+
+    @media (min-width: 651px) {
+      .weather-tagline { margin-top: 1rem; }
+    }
+
+    /* ── Cream column: vertical scroller, horizontal card animation ──
+       The scroll interaction (wheel, trackbar, scrollbar) is vertical,
+       same as a normal scrollable panel. Visually though, the two
+       "pages" of scrollable height are just invisible snap targets —
+       the actual cards live in a sticky, pinned viewport and slide
+       left/right as you scroll down, so the transition itself reads as
+       horizontal. On phone it's unwrapped (see max-width query below)
+       so each card can be placed independently, stacked vertically, in
+       the mobile stack. */
+    .cream-col {
+      grid-area: right;
+      height: 100%;
+      background: var(--bg);
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      scroll-snap-type: y mandatory;
+    }
+    /* Paused while the tracklist is expanded and overflowing, so
+       mandatory snap doesn't fight the user trying to scroll through
+       the extra tracks (there's no snap point partway down the
+       overflow region — see trackOverflowSpacer). Restored once the
+       tracklist collapses again. */
+    .cream-col.tracklist-scroll-active {
+      scroll-snap-type: none;
+    }
+
+    /* Pinned window onto the horizontal track: stays put at the top of
+       the scrollport for the whole scrollable range, so scrolling
+       vertically doesn't move it up/down — only the track inside it
+       slides. NOTE: this element intentionally does NOT carry
+       scroll-snap-align — sticky elements make unreliable snap targets
+       (their box appears "already in place" once stuck, which is what
+       was preventing scrolling back up to the music card). The actual
+       snap points are the plain, non-sticky markers below. */
+    .cream-viewport {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Zero-footprint marker for the very first snap point (top of the
+       column). Plain and non-sticky, so it's an unambiguous snap
+       target. */
+    .cream-snap-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      pointer-events: none;
+    }
+
+    /* Invisible spacers: each gives the column one more "page" of
+       scrollable height with its own plain (non-sticky) snap target. */
+    .cream-snap-spacer {
+      width: 100%;
+      height: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+
+    /* Height is set in px by JS, only while the tracklist is expanded
+       and taller than the viewport — see updateCreamTrack(). Zero
+       otherwise, so it's a no-op the rest of the time. Intentionally
+       has no scroll-snap-align: it's scrolled through freely rather
+       than snapped to (scroll-snap-type is paused for the same span —
+       see .cream-col.tracklist-scroll-active). */
+    .cream-track-overflow-spacer {
+      width: 100%;
+      height: 0;
+    }
+
+    .cream-track {
+      display: grid;
+      grid-template-columns: 50% 50%;
+      grid-template-rows: 50% 50%;
+      width: 200%;
+      height: 200%;
+    }
+
+    .cream-card {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      position: relative;
+    }
+
+    .cream-card--music { grid-column: 1; grid-row: 1; }
+    .cream-card--games { grid-column: 2; grid-row: 1; }
+    .cream-card--blank { grid-column: 2; grid-row: 2; }
+
+    .cream-card--music {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ── Brain Games card ── */
+    .cream-card--games {
+      display: flex;
+      padding: 2rem 1.5rem 4rem;
+    }
+    @media (min-width: 651px) {
+      .cream-card--games {
+        /* Matches .hero-text's desktop padding-top exactly, so the top
+           of "Brain Games" lines up with the top of the hero paragraph.
+           Bottom padding is 0.75x that, so the list sits a bit further
+           down toward the bottom of the card. */
+        padding: 9rem 2.5rem 6.75rem;
+      }
+    }
+
+    .games-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .games-header {
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 14px;
+      line-height: 1.3;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      text-align: left;
+    }
+    @media (min-width: 651px) {
+      .games-header {
+        /* Compensates for .hero-lead's much larger line-height (1.7 vs
+           1.3), which pushes its visible glyphs down further within
+           its own line box than games-header's tighter line-height
+           does — without this nudge the two titles' padding-top
+           matches but their visible text doesn't. */
+        margin-top: 4px;
+      }
+    }
+
+    .games-header .tm {
+      font-size: 1.5em;
+      display: inline-block;
+      vertical-align: top;
+      line-height: 1;
+      margin-left: 3px;
+      text-transform: none;
+    }
+
+    /* Sits centered in the gap between the section header and the game
+       list — a third flex child alongside them, so justify-content:
+       space-between on .games-inner naturally centers it in whatever
+       space remains between the two. Works the same on phone and PC. */
+    .games-hero {
+      margin: 0;
+      text-align: center;
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    /* Forces a break after "games" / before "reimagined" on phone
+       portrait only; on PC the sentence runs as a single line. */
+    .hero-linebreak {
+      display: none;
+    }
+    @media (max-width: 650px) {
+      .hero-linebreak {
+        display: block;
+      }
+    }
+
+    .games-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 0rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(33, 29, 29, 0.25);
+    }
+    @media (min-width: 651px) {
+      .games-list { margin-top: 0; }
+    }
+
+    .games-list-item {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(33, 29, 29, 0.25);
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 15px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .games-list-item:hover {
+      opacity: 0.7;
+    }
+
+    /* "Game 01" / "Game 02" labels switch to owners-text; the values
+       (Word Search, Buzzword) stay in gemeli mono like the rest of the
+       list. Size/spacing/case stay identical between the two. */
+    .games-list-label {
+      font-family: var(--font-body);
+      font-size: 14.5px;
+    }
+
+    /* ── Third card: page footer, in the About page's phone-mode format ── */
+    .cream-card--blank {
+      background: var(--bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem 1.5rem 2rem;
+    }
+    @media (min-width: 651px) {
+      .cream-card--blank {
+        /* Matches the other two cards' desktop padding. */
+        padding: 9rem 2.5rem 6.75rem;
+      }
+    }
+
+    /* Phone only — matches the About page's .full-divider treatment
+       above its footer. The footer now follows it directly in normal
+       flow (not bottom-anchored), so the divider sits a small, fixed
+       distance from the top of the card, and the gap beneath it to the
+       footer content matches About.html's spacing exactly. Not shown
+       on PC at all. */
+    .footer-divider-mobile {
+      display: none;
+    }
+    @media (max-width: 650px) {
+      .cream-card--blank {
+        justify-content: flex-start;
+        padding-top: 0;
+        /* Matches About.html's body padding-bottom (5rem) — the space
+           below the footer content, no longer forced to a taller
+           height by the card-matching script (see JS below). */
+        padding-bottom: 5rem;
+      }
+      .footer-divider-mobile {
+        display: block;
+        margin-top: 2cm;
+        /* Cancels the card's own 1.5rem left/right padding so the line
+           reaches the true edges of the page, not just the card's
+           content box. */
+        margin-left: -1.5rem;
+        margin-right: -1.5rem;
+        border-top: 0.5px solid var(--border);
+      }
+    }
+
+    /* Footer grid: same 2-column, stacked format used on the About
+       page's phone layout — description + copyright span the full
+       width, Contact and Services sit side by side underneath. */
+    .site-footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 1rem;
+      row-gap: 1.75rem;
+      align-items: start;
+    }
+    @media (max-width: 650px) {
+      .site-footer {
+        /* Matches About.html's gap under its divider exactly:
+           .site-footer's own margin-top(1rem) + padding-top(1.5rem). */
+        margin-top: 2.5rem;
+      }
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      align-self: start;
+    }
+    .footer-col:first-child {
+      grid-column: 1 / -1;
+    }
+
+    /* Desktop only: the description + copyright move up and out of the
+       bottom-anchored footer grid, pinned instead to the top of the
+       card so their top edge lines up with the top of the hero
+       paragraph — same reference point (9rem) used for "Brain Games"
+       earlier. Contact/Services stay put at the bottom. */
+    @media (min-width: 651px) {
+      .footer-col:first-child {
+        position: absolute;
+        top: 9rem;
+        left: 2.5rem;
+        right: 2.5rem;
+      }
+    }
+
+    .footer-desc {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 0.9rem;
+    }
+    @media (min-width: 651px) {
+      .footer-desc {
+        /* Compensates for .hero-lead's taller line-height (1.7 vs 1.5
+           here), same trick used for the games-header nudge. */
+        margin-top: 2px;
+      }
+    }
+
+    .footer-copyright {
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 12px;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+
+    .footer-heading {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 0.7rem;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .footer-links a {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 13px;
+      color: var(--text);
+      text-decoration: underline;
+      white-space: normal;
+    }
+
+    .footer-col--services .footer-links a {
+      text-transform: uppercase;
+    }
+
+    /* Desktop only: nudge "Contact" right, roughly halfway toward
+       "Services" — Services itself stays exactly where it was. */
+    @media (min-width: 651px) {
+      .footer-col--contact {
+        margin-left: 9.5rem;
+      }
+    }
+
+    /* ── Header (overlaid, no divider, positions unchanged) ── */
+    .header-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      padding: 1.6rem 1.5rem 0;
+    }
+    @media (min-width: 651px) {
+      .header-wrap {
+        padding: 2.25rem calc(2.5rem + var(--scrollbar-w, 0px)) 0 2.5rem;
+      }
+    }
+
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .site-name {
+      font-family: "all-round-gothic", sans-serif;
+      font-weight: 400;
+      font-size: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    /* Hamburger — recoloured to the standard bg colour so it reads
+       against the wine panel underneath it */
+    .menu-btn-wrap { position: relative; }
+    .menu-btn {
+      position: relative;
+      width: 22px;
+      height: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .menu-btn span {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--bg);
+      transition: transform 0.25s ease, top 0.25s ease;
+    }
+    .menu-btn span:first-child { top: 1.75px; }
+    .menu-btn span:last-child { top: 12.25px; }
+    .menu-btn.open span { height: 1.8px; }
+    .menu-btn.open span:first-child { top: 7px; transform: rotate(45deg); }
+    .menu-btn.open span:last-child { top: 7px; transform: rotate(-45deg); }
+
+    .menu-accordion {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 0.75rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+    }
+    .menu-accordion.open { max-height: 220px; }
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .menu-list a {
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--bg);
+      text-decoration: none;
+      padding: 0.5rem 0;
+      white-space: nowrap;
+    }
+    .menu-list a.active {
+      color: rgba(250, 251, 227, 0.45);
+      pointer-events: none;
+      cursor: default;
+    }
+    .menu-list a.menu-link--disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    /* ── CD + player, right panel ── */
+    .music-stack {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.8375rem;
+      margin-top: 2rem;
+    }
+
+    /* CD aligns to the right edge of the player below it — since
+       .music-stack shrink-wraps to its widest child (the player, which
+       is wider than the CD), aligning the CD to the flex column's own
+       end edge lines it up with the player's right edge.
+
+       "Curated Sounds" is anchored to .music-stack itself (not the CD),
+       at left:0 — which is the player's left edge, since .music-stack
+       shrink-wraps to the player's width. Its vertical position is
+       tied to the CD's own height at each breakpoint, so it stays
+       centered on the CD regardless of where the CD sits horizontally. */
+    .music-heading {
+      position: absolute;
+      left: 0;
+      top: calc(min(384px, 62vw) / 2);
+      transform: translateY(-50%) rotate(180deg);
+      writing-mode: vertical-rl;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    /* A single unbroken rule standing in for "———" (3 em dashes), since
+       repeated dash characters were creating a break opportunity and
+       wrapping inside the vertical heading. Same overall length as 4
+       em dashes, same stroke weight as one normal em dash glyph. */
+    .em-rule {
+      display: inline-block;
+      width: 1px;
+      height: 3em;
+      background: currentColor;
+      vertical-align: 0em;
+    }
+
+    .cd-stack {
+      align-self: flex-end;
+      position: relative;
+      width: min(384px, 62vw);
+      height: min(384px, 62vw);
+    }
+
+    .cd-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(0deg);
+      opacity: 0.45;
+      pointer-events: none;
+      user-select: none;
+    }
+    .cd-image--spin {
+      animation: spin-cd 9s linear infinite;
+      animation-play-state: paused;
+    }
+    .cd-image--spin.playing {
+      animation-play-state: running;
+    }
+
+    @media (min-width: 651px) {
+      .music-stack {
+        margin-top: calc(8.459375rem + 3px);
+        padding-bottom: calc(6.125rem - 3px);
+      }
+      .music-heading {
+        top: calc(min(276px, 44.6vw) / 2);
+      }
+      .cd-stack {
+        /* 0.9x the original 307px / 49.6vw */
+        width: min(276px, 44.6vw);
+        height: min(276px, 44.6vw);
+      }
+    }
+
+    /* ── Desktop only: expanding the tracklist slides the whole stack
+       (heading, CD, controls, progress bar, tracklist) up together as
+       one rigid block — no separate fade-outs or height-collapses on
+       the heading/CD anymore. JS (see updateMusicStackOffset) measures
+       how far to move it so the progress bar's bottom edge lines up
+       with the top of the hero text on the wine side, then sets that
+       as a transform on .music-stack; the transition below eases it
+       into place. */
+    @media (min-width: 651px) {
+      .cream-card--music.is-expanded {
+        /* The base rule above clips its own content with
+           overflow:hidden — needed normally so the CD/heading don't
+           bleed past the card, but it also clips the slid-up stack and
+           the expanded tracklist. Switching to visible here means only
+           the outer .cream-viewport clips it, which is what actually
+           lets the translateY reveal everything as the user scrolls.
+           No overflow-y:auto here on purpose: giving the card its own
+           scroll context creates a second, nested scrollbar next to
+           the cream column's real one. Instead, when the tracklist is
+           too tall to fit, the JS scroll handler below (see
+           updateCreamTrack) translates this card up in sync with the
+           cream column's own scroll — same "one real scrollbar drives
+           everything" pattern already used for the card-swap slide. */
+        overflow: visible;
+      }
+
+      /* Separate from .is-expanded on purpose: this needs to stay
+         applied for the whole ~0.35s the tracklist takes to collapse,
+         not just switch off the instant collapsing starts. The base
+         rule's align-items:center recalculates live on every frame the
+         tracklist's height changes — held through the collapse, it
+         was fighting the single .music-stack transform already easing
+         things into place, reading as a bounce. setTracklistExpanded
+         keeps this class applied until the collapse settles, then
+         releases it with its own small FLIP so switching back to
+         centered is itself smooth rather than a snap. Collapsed,
+         resting appearance is completely unaffected — this only ever
+         applies transiently during the expand/collapse motion. */
+      .cream-card--music.is-top-anchored {
+        align-items: flex-start;
+      }
+
+      .music-stack {
+        transition: transform 0.4s ease;
+      }
+
+      /* Heading + CD disappear the instant the tracklist expands (and
+         reappear the instant it collapses) — no fade, just gone, same
+         as everything else in this codebase's phone-mode "no special
+         transition" philosophy. The FLIP logic in setTracklistExpanded
+         already measures whatever layout jump this causes (on top of
+         the align-items switch above) and folds it into the same
+         one-frame cancel-then-release, so nothing extra is needed here
+         to keep it smooth. */
+      .music-stack.is-expanded .music-heading,
+      .music-stack.is-expanded .cd-stack {
+        display: none;
+      }
+    }
+
+    @keyframes spin-cd {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .player-wrap {
+      position: relative;
+      z-index: 2;
+      width: min(380px, 84vw);
+    }
+
+    /* The real Spotify iframe still does the actual streaming/licensed
+       playback — it's just shrunk to invisible rather than display:none,
+       since fully-hidden iframes can get their audio paused by the
+       browser. Our own UI below drives it via the iFrame API. */
+    .spotify-embed-cage {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      contain: strict;
+      z-index: -1;
+    }
+    .spotify-embed-cage * {
+      width: 1px !important;
+      height: 1px !important;
+    }
+
+    /* ── Custom player UI (replaces the visible Spotify widget) ── */
+    .wr-player {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wr-tracklist {
+      list-style: none;
+      border-top: 1px solid rgba(33, 29, 29, 0.25);
+    }
+    .wr-track {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(33, 29, 29, 0.25);
+      font-family: var(--font-mono);
+      font-weight: 300;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--text);
+      cursor: pointer;
+      background: none;
+      border-left: none;
+      border-right: none;
+      text-align: left;
+      overflow: hidden;
+      max-height: 6rem;
+      opacity: 1;
+      transition: max-height 0.35s ease, opacity 0.3s ease, padding 0.35s ease, border-color 0.35s ease;
+    }
+    /* Collapsed state: only the currently active track stays visible —
+       everything else shrinks to nothing rather than being removed
+       from the DOM, so the swap between tracks (and the reveal of the
+       full list) can animate smoothly instead of popping. */
+    .wr-tracklist:not(.is-expanded) .wr-track:not(.is-active) {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-bottom-color: transparent;
+      pointer-events: none;
+    }
+
+    /* Phone: no animated reveal. On phone this should behave like the
+       hamburger nav: press the arrow, the list is just immediately
+       there, and the card grows to fit it — no easing to feel glitchy. */
+    @media (max-width: 650px) {
+      .wr-track {
+        transition: none;
+      }
+    }
+    .wr-track-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .wr-track-num {
+      flex-shrink: 0;
+      width: 1.1rem;
+      font-size: 13px;
+      opacity: 0.55;
+    }
+    .wr-track-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-width: 0;
+      gap: 0.2rem;
+    }
+    .wr-track-title {
+      font-family: var(--font-body);
+      font-weight: 300;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wr-track-artist {
+      font-family: var(--font-body);
+      font-size: 11px;
+      opacity: 0.55;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wr-track-thumb {
+      flex-shrink: 0;
+      align-self: center;
+      width: 2.86rem;
+      height: 2.86rem;
+      object-fit: cover;
+      border: 1px solid rgba(33, 29, 29, 0.8);
+      display: block;
+    }
+    .wr-track.is-active { color: var(--wine); }
+    .wr-track.is-active .wr-track-num { opacity: 1; }
+    .wr-track:hover { opacity: 0.7; }
+
+    /* Progress bar: same drag pattern as the weather-reel scrollbar,
+       but sharp (no border-radius) and in the cream card's dark-on-
+       cream palette instead of the wine card's cream-on-wine one. */
+    .wr-progress-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+      margin-bottom: 1.28rem;
+    }
+
+    .wr-progress-hit {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 12px 0 10px;
+      cursor: pointer;
+      touch-action: none;
+    }
+    .wr-progress-hit:not(.is-seekable) {
+      cursor: default;
+    }
+    .wr-progress-track {
+      position: relative;
+      width: 100%;
+      height: 4px;
+      background: rgba(33, 29, 29, 0.25);
+      pointer-events: none;
+    }
+    .wr-progress-thumb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: var(--wine);
+      pointer-events: none;
+    }
+    .wr-timer {
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .wr-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 0.44rem;
+      margin-bottom: 0.64rem;
+    }
+    .wr-ctrl-btn {
+      appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      background: none;
+      padding: 0;
+      margin: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 1.71rem;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .wr-ctrl-btn img {
+      height: 100%;
+      width: auto;
+      display: block;
+    }
+    .wr-ctrl-btn:hover { opacity: 0.7; }
+
+    .wr-ctrl-btn--expand svg {
+      height: 100%;
+      width: auto;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .wr-ctrl-btn--expand.is-expanded svg {
+      transform: rotate(180deg);
+    }
+
+    .wr-spotify-link {
+      /* Only shown once the tracklist is expanded (see the sibling
+         rule below) — it has no reason to appear above the single
+         collapsed/active track. */
+      display: none;
+      align-items: center;
+      align-self: flex-end;
+      gap: 0.4rem;
+      margin-top: 1.5rem;
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .wr-tracklist.is-expanded ~ .wr-spotify-link {
+      display: inline-flex;
+    }
+    .wr-spotify-link svg { flex-shrink: 0; }
+    .wr-spotify-link:hover { opacity: 0.7; }
+
+
+    /* ── Small screens: stack panels, page scrolls, logo turns white ── */
+    @media (max-width: 650px) {
+      html, body {
+        height: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .viewfinder {
+        position: static;
+        display: grid;
+        width: 100%;
+        height: auto;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto auto auto auto auto;
+        grid-template-areas:
+          "top"
+          "right"
+          "bottom"
+          "games"
+          "blank";
+      }
+
+      .wine-block--top {
+        height: auto;
+        min-height: 26vh;
+      }
+      .wine-block--bottom {
+        height: auto;
+        min-height: 18vh;
+      }
+      /* Unwrap the card-snap scroller on mobile: its cards become
+         independent grid items, stacked vertically in normal order. */
+      .cream-col {
+        display: contents;
+      }
+      .cream-viewport {
+        display: contents;
+      }
+      .cream-track {
+        display: contents;
+      }
+      .cream-snap-top,
+      .cream-snap-spacer,
+      .cream-track-overflow-spacer {
+        display: none;
+      }
+      .cream-card {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        scroll-snap-align: none;
+      }
+      .cream-card--music {
+        grid-area: right;
+        min-height: 70vh;
+        padding-bottom: 3.5rem;
+        /* Top-anchored (not centered) specifically so expanding the
+           tracklist can't shift the CD/controls above it — with
+           align-items:center, growing the card's content would have
+           re-centered everything each time, making the CD appear to
+           "move" as the list opened. Anchoring from the top means
+           expanding only ever adds height below the existing content,
+           never repositions it. */
+        align-items: flex-start;
+      }
+      .cream-card--games {
+        grid-area: games;
+        /* No longer forced to match the music card's height — it
+           sizes to its own content, independent of whether the
+           tracklist above it is expanded. */
+        min-height: 70vh;
+        padding: 1.75rem 1.5rem 1.75rem;
+      }
+      .cream-card--blank {
+        grid-area: blank;
+        /* No forced min-height: sizes to its own content, per the
+           About.html-matched spacing above. */
+      }
+
+      .music-stack {
+        margin-top: 3.959375rem;
+      }
+
+      /* header overlays the wine band at the top on mobile, so both
+         the hamburger and the logo need to read against wine */
+      .site-name { color: var(--bg); }
+
+      /* fixed to the top section itself (scrolls away with it), rather
+         than pinned to the viewport for the whole page — matches the
+         original reference page's header behaviour */
+      .header-wrap {
+        position: absolute;
+      }
+    }
+
+    /* ── Landscape block: phones only ──
+       Mirrors the Thoughtline lightbox's visual formatting exactly —
+       same dark wine overlay at 95% opacity, same gemeli-mono uppercase
+       heading treatment, same owners-text body copy. Targets phones in
+       landscape specifically (max-height:500px catches phone landscape
+       heights while leaving tablets/laptops in landscape untouched). No
+       close button — it's not a dismissible dialog, it just disappears
+       on its own once the device is rotated back to portrait. */
+    .landscape-block {
+      display: none;
+    }
+    @media (orientation: landscape) and (max-height: 500px) {
+      .landscape-block {
+        display: flex;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(23, 0, 6, 0.95);
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px 40px;
+      }
+      .landscape-block-inner {
+        max-width: 420px;
+      }
+      .landscape-block-heading {
+        font-family: var(--font-mono);
+        font-weight: 300;
+        font-size: 19px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--bg);
+        margin: 0 0 16px 0;
+      }
+      .landscape-block-copy {
+        font-family: var(--font-body);
+        font-weight: 300;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--bg);
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="landscape-block" role="dialog" aria-label="Rotate device">
+    <div class="landscape-block-inner">
+      <p class="landscape-block-heading">Portrait Only</p>
+      <p class="landscape-block-copy">This page is portrait only. Turn your device back upright to enter.</p>
+    </div>
+  </div>
+
+  <div class="viewfinder">
+    <div class="wine-block wine-block--top">
+      <div class="hero-text">
+        <p class="hero-lead">A space for ideas and distractions.<br>Take a seat while you wait.</p>
+      </div>
+    </div>
+    <div class="cream-col" id="creamCol">
+      <span class="cream-snap-top" aria-hidden="true"></span>
+      <div class="cream-viewport">
+        <div class="cream-track" id="creamTrack">
+          <div class="cream-card cream-card--music">
+            <div class="music-stack">
+              <span class="music-heading">Curated Sounds <span class="em-rule"></span> Autumn 2026</span>
+              <div class="cd-stack">
+                <img src="blank_CD.png" alt="" class="cd-image cd-image--spin" id="cdImage" />
+              </div>
+              <div class="player-wrap">
+                <div class="spotify-embed-cage">
+                  <div id="spotify-embed"></div>
+                </div>
+
+                <div class="wr-player">
+                  <div class="wr-controls">
+                    <button type="button" class="wr-ctrl-btn" id="wrPrevBtn" aria-label="Previous track">
+                      <img src="music-icons/icon-previous.png" alt="">
+                    </button>
+                    <button type="button" class="wr-ctrl-btn" id="wrNextBtn" aria-label="Next track">
+                      <img src="music-icons/icon-next.png" alt="">
+                    </button>
+                    <button type="button" class="wr-ctrl-btn wr-ctrl-btn--play" id="wrPlayBtn" aria-label="Play">
+                      <img id="wrPlayIcon" src="music-icons/icon-play.png" alt="">
+                    </button>
+                    <button type="button" class="wr-ctrl-btn wr-ctrl-btn--expand" id="wrExpandBtn" aria-expanded="false" aria-controls="wrTracklist" aria-label="Show full tracklist">
+                      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M3.5 6L8 10.5L12.5 6" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div class="wr-progress-row" id="wrProgressRow">
+                    <div class="wr-progress-hit is-seekable" id="wrProgressHit">
+                      <div class="wr-progress-track">
+                        <div class="wr-progress-thumb" id="wrProgressThumb"></div>
+                      </div>
+                    </div>
+                    <span class="wr-timer" id="wrTimer">-00:00</span>
+                  </div>
+
+                  <ol class="wr-tracklist" id="wrTracklist">
+                    <li class="wr-track" data-uri="spotify:track:6EOJjwcPgGWe98IDyCsBmY" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">01</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">In The Waiting Line</span>
+                        <span class="wr-track-artist">Zero 7, Sophie Barker</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273e79a1017901613837ea0fca9" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:3ZzhV6JIDKWvWR7wiKWD0C" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">02</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">La femme d&rsquo;argent</span>
+                        <span class="wr-track-artist">Air</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273f175f7e9aa80290164db00a3" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:7DBBuzCuZQaWNRix9ys6UB" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">03</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Suzuki</span>
+                        <span class="wr-track-artist">Tosca</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273253a1b35c8c2995bebe300af" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:53VS3tjssARzYcVoyG5vXE" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">04</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">All That We Perceive</span>
+                        <span class="wr-track-artist">Thievery Corporation</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273943b30cf86f0edd3fc5a3221" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:7l7Z0eHAZ4uoNho7moZlTv" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">05</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Modular Mix</span>
+                        <span class="wr-track-artist">Air</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273345d6b305ba4e618ce86749a" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:0KVNBXWdsyZs5dicoOTUyq" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">06</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Lebanese Blonde</span>
+                        <span class="wr-track-artist">Thievery Corporation</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b273976bc2ace1672ba9400a0662" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:0VcvKN17fqyvbznfwypjDB" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">07</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Da Du Dah</span>
+                        <span class="wr-track-artist">Korokoro</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b27395ee9ba6913b82d4724ec1f7" alt="">
+                    </li>
+                    <li class="wr-track" data-uri="spotify:track:5lMugQF80AuN6uukFJLT58" tabindex="0" role="button">
+                      <span class="wr-track-main">
+                      <span class="wr-track-num">08</span>
+                      <span class="wr-track-info">
+                        <span class="wr-track-title">Junie</span>
+                        <span class="wr-track-artist">Solange</span>
+                      </span>
+                      </span>
+                      <img class="wr-track-thumb" src="https://i.scdn.co/image/ab67616d0000b2735fbf6306df238e6b7356ac03" alt="">
+                    </li>
+                  </ol>
+
+                  <a class="wr-spotify-link" href="https://open.spotify.com/playlist/0XXOJH57JlfsukZGkiRdKz?si=GlIWVbt0RDirn-0_BI6dfg" target="_blank" rel="noopener noreferrer">
+                    Listen on Spotify
+                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M4 12L12 4M12 4H5.5M12 4V10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="cream-card cream-card--games">
+            <div class="games-inner">
+              <div class="games-header">
+                <span>Brain Games</span>
+                <span>Off Paper<sup class="tm">&trade;</sup></span>
+              </div>
+              <p class="games-hero">Newspaper-style games <br class="hero-linebreak">reimagined for brand people.</p>
+              <ul class="games-list">
+                <li>
+                  <a class="games-list-item" href="https://play.sabi.london/word-search" target="_blank" rel="noopener noreferrer">
+                    <span class="games-list-label">Game 01</span>
+                    <span class="games-list-value">Word Search</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="games-list-item" href="https://play.sabi.london/buzzword" target="_blank" rel="noopener noreferrer">
+                    <span class="games-list-label">Game 02</span>
+                    <span class="games-list-value">Buzzword</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="cream-card cream-card--blank">
+            <div class="footer-divider-mobile" aria-hidden="true"></div>
+            <footer class="site-footer">
+              <div class="footer-col">
+                <p class="footer-desc">A creative consultancy offering strategy and design<br>for culture-shaping presence and storytelling.</p>
+                <p class="footer-copyright">© 2026 SABI London</p>
+              </div>
+
+              <div class="footer-col footer-col--contact">
+                <p class="footer-heading">Contact</p>
+                <div class="footer-links">
+                  <a href="mailto:office@sabi.london" target="_blank" rel="noopener">office@sabi.london</a>
+                  <a href="tel:+447400192837">+44 7400 192837</a>
+                  <a href="https://calendar.app.google/itHV85cwLfoDmH7x5">OOO Hours</a>
+                </div>
+              </div>
+
+              <div class="footer-col footer-col--services">
+                <p class="footer-heading">Services</p>
+                <div class="footer-links">
+                  <a href="https://sabi.london/services/brand-strategy/">Brand Strategy</a>
+                  <a href="https://sabi.london/services/world-building/">World Building</a>
+                  <a href="https://sabi.london/services/copy/">Copy</a>
+                  <a href="https://sabi.london/services/community-and-partnerships/">Community &amp; Partnerships</a>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+      <!-- Extra scroll room added on the fly (desktop only) whenever the
+           expanded tracklist is taller than the viewport — see
+           updateCreamTrack(). Keeps the cream column's own scrollbar as
+           the single scrollbar for reading the full tracklist, instead
+           of giving the music card a second, nested one. -->
+      <div class="cream-track-overflow-spacer" id="trackOverflowSpacer" aria-hidden="true"></div>
+      <div class="cream-snap-spacer" aria-hidden="true"></div>
+      <div class="cream-snap-spacer" aria-hidden="true"></div>
+    </div>
+    <div class="wine-block wine-block--bottom">
+      <div class="clocks-wrap">
+        <div class="weather-reel" id="weatherReel">
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>L</span><span>o</span><span>n</span><span>d</span><span>o</span><span>n</span></span></span>
+            <span class="wr-city-time" id="clock-London"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-London"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>N</span><span>e</span><span>w</span><span>&nbsp;</span><span>Y</span><span>o</span><span>r</span><span>k</span></span></span>
+            <span class="wr-city-time" id="clock-New York"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-New York"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>P</span><span>a</span><span>r</span><span>i</span><span>s</span></span></span>
+            <span class="wr-city-time" id="clock-Paris"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Paris"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>T</span><span>o</span><span>k</span><span>y</span><span>o</span></span></span>
+            <span class="wr-city-time" id="clock-Tokyo"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Tokyo"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>M</span><span>i</span><span>l</span><span>a</span><span>n</span></span></span>
+            <span class="wr-city-time" id="clock-Milan"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Milan"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>L</span><span>o</span><span>s</span><span>&nbsp;</span><span>A</span><span>n</span><span>g</span><span>e</span><span>l</span><span>e</span><span>s</span></span></span>
+            <span class="wr-city-time" id="clock-Los Angeles"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Los Angeles"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>S</span><span>e</span><span>o</span><span>u</span><span>l</span></span></span>
+            <span class="wr-city-time" id="clock-Seoul"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Seoul"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name wr-city-name--small"><span class="wr-city-inner"><span>C</span><span>o</span><span>p</span><span>e</span><span>n</span><span>h</span><span>a</span><span>g</span><span>e</span><span>n</span></span></span>
+            <span class="wr-city-time" id="clock-Copenhagen"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Copenhagen"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+          <div class="wr-block">
+            <span class="wr-city-name"><span class="wr-city-inner"><span>B</span><span>e</span><span>r</span><span>l</span><span>i</span><span>n</span></span></span>
+            <span class="wr-city-time" id="clock-Berlin"><span class="wr-time-inner"><span data-h1>0</span><span data-h2>0</span><span class="wr-time-colon">:</span><span data-m1>0</span><span data-m2>0</span></span></span>
+            <span class="wr-city-weather" id="weather-Berlin"><span class="wr-icon" data-icon></span><span data-temp>--°C</span><span class="wr-refresh-text" data-refresh-text hidden>UPDATE<br>WEATHER</span></span>
+          </div>
+        </div>
+        <div class="weather-scrollbar-hit" id="weatherScrollbarTrack">
+          <div class="weather-scrollbar-track">
+            <div class="weather-scrollbar-thumb" id="weatherScrollbarThumb"></div>
+          </div>
+        </div>
+        <div class="weather-tagline">
+          <span>All the good ideas are outside</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-wrap">
+    <header class="site-header">
+      <div class="menu-btn-wrap">
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+        </button>
+        <nav class="menu-accordion" id="menuAccordion">
+          <div class="menu-list">
+            <a href="https://sabi.london/about/">About</a>
+            <a href="https://sabi.london/services/">Services</a>
+            <a href="https://play.sabi.london/word-search/" class="menu-link--disabled" aria-disabled="true" tabindex="-1">Play</a>
+          </div>
+        </nav>
+      </div>
+      <a href="https://sabi.london/" class="site-name">S A B I</a>
+    </header>
+  </div>
+
+  <script>
+    const menuBtn = document.getElementById('menuBtn');
+    const menuAccordion = document.getElementById('menuAccordion');
+    const heroText = document.querySelector('.hero-text');
+    const clocksWrap = document.querySelector('.clocks-wrap');
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menuAccordion.classList.toggle('open');
+      menuBtn.classList.toggle('open', isOpen);
+      menuBtn.setAttribute('aria-expanded', isOpen);
+
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+      const offset = menuAccordion.scrollHeight;
+
+      if (isDesktop) {
+        // Transform-only, and only on the hero copy: transform never
+        // grows the grid row or clips content, and there's already a
+        // natural gap between the hero paragraph and the weather reel
+        // (which sits flush against the bottom of its own row), so the
+        // reel doesn't need to move too — doing so was pushing it off
+        // the bottom of the viewport entirely, since it had nowhere
+        // left to go.
+        const shift = isOpen ? `translateY(${offset}px)` : 'translateY(0)';
+        if (heroText) {
+          heroText.style.transform = shift;
+          heroText.style.marginTop = '0px';
+        }
+        if (clocksWrap) {
+          clocksWrap.style.transform = '';
+        }
+      } else {
+        if (heroText) {
+          heroText.style.marginTop = isOpen ? offset + 'px' : '0px';
+          heroText.style.transform = '';
+        }
+        if (clocksWrap) {
+          clocksWrap.style.transform = '';
+        }
+      }
+    });
+  </script>
+
+  <!-- ── World clocks + weather ── -->
+  <script>
+    const WR_ICONS = {
+      clear: 'clear',
+      moon: 'moon',
+      partlyCloudy: 'partlyCloudy',
+      partlyCloudyNight: 'partlyCloudyNight',
+      cloud: 'cloud',
+      fog: 'fog',
+      rain: 'rain',
+      snow: 'snow',
+      storm: 'storm'
+    };
+
+    function wrIconForCode(code, isDay) {
+      if (code === 0) return isDay ? WR_ICONS.clear : WR_ICONS.moon;
+      if ([1, 2].includes(code)) return isDay ? WR_ICONS.partlyCloudy : WR_ICONS.partlyCloudyNight;
+      if (code === 3) return WR_ICONS.cloud;
+      if ([45, 48].includes(code)) return WR_ICONS.fog;
+      if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return WR_ICONS.rain;
+      if ([71, 73, 75, 77, 85, 86].includes(code)) return WR_ICONS.snow;
+      if ([95, 96, 99].includes(code)) return WR_ICONS.storm;
+      return WR_ICONS.cloud;
+    }
+
+    const WR_CITIES = [
+      { id: 'London', lat: 51.5074, lon: -0.1278, tz: 'Europe/London' },
+      { id: 'New York', lat: 40.7128, lon: -74.0060, tz: 'America/New_York' },
+      { id: 'Paris', lat: 48.8566, lon: 2.3522, tz: 'Europe/Paris' },
+      { id: 'Tokyo', lat: 35.6762, lon: 139.6503, tz: 'Asia/Tokyo' },
+      { id: 'Milan', lat: 45.4642, lon: 9.1900, tz: 'Europe/Rome' },
+      { id: 'Los Angeles', lat: 34.0522, lon: -118.2437, tz: 'America/Los_Angeles' },
+      { id: 'Seoul', lat: 37.5665, lon: 126.9780, tz: 'Asia/Seoul' },
+      { id: 'Copenhagen', lat: 55.6761, lon: 12.5683, tz: 'Europe/Copenhagen' },
+      { id: 'Berlin', lat: 52.5200, lon: 13.4050, tz: 'Europe/Berlin' }
+    ];
+
+    function wrUpdateClock(city) {
+      const timeCell = document.getElementById('clock-' + city.id);
+      if (!timeCell) return;
+      const timeStr = new Date().toLocaleTimeString('en-GB', {
+        timeZone: city.tz,
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      const [hh, mm] = timeStr.split(':');
+      timeCell.querySelector('[data-h1]').textContent = hh[0];
+      timeCell.querySelector('[data-h2]').textContent = hh[1];
+      timeCell.querySelector('[data-m1]').textContent = mm[0];
+      timeCell.querySelector('[data-m2]').textContent = mm[1];
+    }
+
+    async function wrUpdateWeather(city) {
+      const weatherCell = document.getElementById('weather-' + city.id);
+      if (!weatherCell) return;
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code,is_day`);
+        const data = await res.json();
+        const temp = Math.round(data.current.temperature_2m);
+        const code = data.current.weather_code;
+        const isDay = data.current.is_day === 1;
+        weatherCell.classList.remove('is-error');
+        weatherCell.querySelector('[data-temp]').textContent = `${temp}°C`;
+        const iconName = wrIconForCode(code, isDay);
+        weatherCell.querySelector('[data-icon]').innerHTML =
+          `<img src="/icons-cream/${iconName}.png" alt="" width="256" height="256" onerror="this.style.display='none'">`;
+      } catch (e) {
+        weatherCell.classList.add('is-error');
+        weatherCell.querySelector('[data-temp]').textContent = '';
+        weatherCell.querySelector('[data-icon]').innerHTML =
+          `<button type="button" class="wr-refresh-btn" aria-label="Retry weather">
+             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+               <polyline points="1 4 1 10 7 10"/>
+               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+             </svg>
+           </button>`;
+        const retryBtn = weatherCell.querySelector('.wr-refresh-btn');
+        if (retryBtn) retryBtn.addEventListener('click', () => wrUpdateWeather(city));
+      }
+    }
+
+    // Measure natural (unconstrained) content width of a space-between
+    // flex row — temporarily switch it to shrink-to-fit so we get its
+    // real minimum width instead of whatever width we last gave it.
+    function wrNaturalWidth(el) {
+      if (!el) return 0;
+      const prevDisplay = el.style.display;
+      const prevWidth = el.style.width;
+      const prevJustify = el.style.justifyContent;
+      el.style.display = 'inline-flex';
+      el.style.width = 'auto';
+      el.style.justifyContent = 'flex-start';
+      const width = el.getBoundingClientRect().width;
+      el.style.display = prevDisplay;
+      el.style.width = prevWidth;
+      el.style.justifyContent = prevJustify;
+      return width;
+    }
+
+    // Card width is driven by the TIME row's natural content width (plus
+    // weather as a safety floor) — NOT the city name. Because both
+    // .wr-city-inner and .wr-time-inner use width:100% + space-between,
+    // the city name automatically stretches to match this exact same
+    // width; they're locked together by construction, so they always
+    // align, and narrowing the time row narrows the whole card.
+    function matchWrBlockWidths() {
+      const blocks = document.querySelectorAll('.wr-block');
+      const reel = document.getElementById('weatherReel');
+      if (!blocks.length || !reel) return;
+
+      let naturalMax = 0;
+      blocks.forEach((block) => {
+        const nameInner = block.querySelector('.wr-city-inner');
+        const timeInner = block.querySelector('.wr-time-inner');
+        const weatherEl = block.querySelector('.wr-city-weather');
+        const w = Math.max(
+          wrNaturalWidth(nameInner),
+          wrNaturalWidth(timeInner),
+          wrNaturalWidth(weatherEl)
+        );
+        if (w > naturalMax) naturalMax = w;
+      });
+      const cardWidth = Math.ceil(naturalMax) + 24; // covers the block's own left/right padding + a bit of extra breathing room
+      blocks.forEach((block) => {
+        block.style.width = cardWidth + 'px';
+      });
+
+      // Reset gap to measure the reel's true available width first,
+      // then solve for the gap that spaces exactly N cards across it.
+      reel.style.gap = '0px';
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+      const visibleCount = isDesktop ? 5 : 3;
+      const availableWidth = reel.clientWidth;
+      const minGap = 16;
+      const rawGap = (availableWidth - visibleCount * cardWidth) / (visibleCount - 1);
+      const gap = Math.max(minGap, rawGap);
+      reel.style.gap = gap + 'px';
+
+      wrUpdateThumb();
+    }
+
+    async function wrInit() {
+      const weatherPromises = WR_CITIES.map((city) => {
+        wrUpdateClock(city);
+        setInterval(() => wrUpdateClock(city), 1000);
+        return wrUpdateWeather(city);
+      });
+      // No periodic refresh — a failed fetch shows a clickable retry icon
+      // instead (see the catch block in wrUpdateWeather), same approach
+      // as the Home page's weather block.
+      await Promise.all(weatherPromises);
+      matchWrBlockWidths();
+      document.getElementById('weatherReel').classList.add('is-ready');
+    }
+
+    wrInit();
+    window.addEventListener('resize', matchWrBlockWidths);
+  </script>
+
+  <!-- ── Weather reel: custom scrollbar (Typeform-style progress bar) ── -->
+  <script>
+    const wrReel = document.getElementById('weatherReel');
+    const wrTrack = document.getElementById('weatherScrollbarTrack');
+    const wrThumb = document.getElementById('weatherScrollbarThumb');
+
+    function wrMaxScroll() {
+      return Math.max(0, wrReel.scrollWidth - wrReel.clientWidth);
+    }
+
+    function wrUpdateThumb() {
+      const max = wrMaxScroll();
+      // Thumb width mirrors how much of the reel is visible at once
+      // (e.g. 5 of 9 blocks visible → thumb covers 5/9 of the track).
+      const widthRatio = Math.min(1, wrReel.clientWidth / wrReel.scrollWidth);
+      const widthPct = widthRatio * 100;
+      wrThumb.style.width = widthPct + '%';
+
+      const scrollRatio = max > 0 ? wrReel.scrollLeft / max : 0;
+      const trackWidth = wrTrack.clientWidth;
+      const thumbWidthPx = (widthPct / 100) * trackWidth;
+      const maxThumbLeft = trackWidth - thumbWidthPx;
+      wrThumb.style.left = (scrollRatio * maxThumbLeft) + 'px';
+    }
+
+    function wrScrollToRatio(ratio) {
+      const max = wrMaxScroll();
+      wrReel.scrollLeft = Math.min(max, Math.max(0, ratio * max));
+    }
+
+    function wrRatioFromClientX(clientX) {
+      const rect = wrTrack.getBoundingClientRect();
+      const thumbWidthPx = wrThumb.getBoundingClientRect().width;
+      const usable = Math.max(1, rect.width - thumbWidthPx);
+      const x = clientX - rect.left - thumbWidthPx / 2;
+      return Math.min(1, Math.max(0, x / usable));
+    }
+
+    let wrDragging = false;
+
+    wrTrack.addEventListener('pointerdown', (e) => {
+      wrDragging = true;
+      wrTrack.setPointerCapture(e.pointerId);
+      wrReel.style.scrollBehavior = 'auto';
+      wrScrollToRatio(wrRatioFromClientX(e.clientX));
+    });
+    wrTrack.addEventListener('pointermove', (e) => {
+      if (!wrDragging) return;
+      wrScrollToRatio(wrRatioFromClientX(e.clientX));
+    });
+    wrTrack.addEventListener('pointerup', (e) => {
+      wrDragging = false;
+      wrTrack.releasePointerCapture(e.pointerId);
+      wrReel.style.scrollBehavior = 'smooth';
+    });
+    wrTrack.addEventListener('pointercancel', () => {
+      wrDragging = false;
+      wrReel.style.scrollBehavior = 'smooth';
+    });
+
+    wrReel.addEventListener('scroll', wrUpdateThumb);
+    window.addEventListener('resize', wrUpdateThumb);
+    wrUpdateThumb();
+  </script>
+
+  <!-- ── Tracklist expand/collapse: independent of the Spotify controller,
+       so it works even before the iFrame API finishes loading ── -->
+  <script>
+    const wrExpandBtn = document.getElementById('wrExpandBtn');
+    const wrTracklistEl = document.getElementById('wrTracklist');
+    const musicCardEl = document.querySelector('.cream-card--music');
+    const musicStackEl = document.querySelector('.music-stack');
+    const wrControlsEl = document.querySelector('.wr-controls');
+    let topAnchorReleaseTimeout = null;
+
+    // Desktop only: computes how far .music-stack needs to move so the
+    // top of the controls row (prev/play/next/expand) lines up with the
+    // top of the hero paragraph on the wine side. Must be called with
+    // .music-stack's own transform cleared first (see callers below) so
+    // the measurement reflects its untransformed, flex-start-anchored
+    // position rather than compounding on top of a previous shift.
+    function computeHeroAlignDelta() {
+      const heroLeadEl = document.querySelector('.hero-lead');
+      if (!heroLeadEl || !wrControlsEl) return 0;
+      const targetY = heroLeadEl.getBoundingClientRect().top;
+      const currentTop = wrControlsEl.getBoundingClientRect().top;
+      return targetY - currentTop;
+    }
+
+    // Recomputes and re-applies the hero-alignment transform without
+    // any FLIP animation — used on resize, where there's no discrete
+    // class-toggle jump to compensate for, just a target position that
+    // may have moved.
+    function updateMusicStackOffset() {
+      if (!musicStackEl) return;
+
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+      if (!isDesktop || !musicStackEl.classList.contains('is-expanded')) {
+        musicStackEl.style.transform = '';
+        return;
+      }
+
+      musicStackEl.style.transform = '';
+      void musicStackEl.getBoundingClientRect(); // force reflow before measuring
+      musicStackEl.style.transform = `translateY(${computeHeroAlignDelta()}px)`;
+    }
+
+    function setTracklistExpanded(expanded) {
+      const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+
+      // FLIP: toggling .is-expanded here causes a discrete,
+      // non-animatable layout jump — the heading + CD instantly
+      // disappear (see .music-stack.is-expanded CSS). Rather than
+      // choreograph that separately, this just measures the effect:
+      // capture the position right before toggling the classes, then
+      // right after (with .music-stack's transform cleared, so this
+      // reflects pure layout, not a previous transform), and use the
+      // difference as a one-frame instant transform that cancels the
+      // jump — released on the very next frame so only the *real*
+      // move (to the hero-aligned target, or back to 0 on collapse)
+      // animates via .music-stack's own transform transition.
+      //
+      // .cream-card--music also carries its own transform — set
+      // directly by the scroll handler (updateCreamTrack) to reveal
+      // tracklist overflow as the user scrolls, with no transition of
+      // its own. If that's left at a nonzero value here (e.g. the user
+      // had scrolled down before collapsing), it snaps back to 0
+      // separately and instantly once updateCreamTrack recalculates —
+      // reading as a second, disconnected motion on top of
+      // .music-stack's smooth one. Clearing it before "last" is
+      // captured folds that snap into the same FLIP measurement, so
+      // the whole thing cancels and releases as a single move.
+      const first = isDesktop && musicStackEl ? musicStackEl.getBoundingClientRect() : null;
+
+      // Cancel any pending release-from-top-anchor left over from a
+      // previous collapse, in case the user re-expands before it's
+      // fired (see the bottom of this function).
+      if (topAnchorReleaseTimeout) {
+        clearTimeout(topAnchorReleaseTimeout);
+        topAnchorReleaseTimeout = null;
+      }
+
+      wrExpandBtn.classList.toggle('is-expanded', expanded);
+      wrExpandBtn.setAttribute('aria-expanded', String(expanded));
+      wrTracklistEl.classList.toggle('is-expanded', expanded);
+      musicCardEl.classList.toggle('is-expanded', expanded);
+      musicStackEl.classList.toggle('is-expanded', expanded);
+
+      // .is-top-anchored is added immediately on expand, but
+      // deliberately *not* removed immediately on collapse — see the
+      // release step below.
+      if (expanded && musicCardEl) {
+        musicCardEl.classList.add('is-top-anchored');
+      }
+
+      if (!isDesktop) return; // Phone: normal document flow, nothing else to do.
+
+      musicStackEl.style.transform = '';
+      if (musicCardEl) musicCardEl.style.transform = '';
+      void musicStackEl.getBoundingClientRect(); // force reflow before measuring "last"
+      const last = musicStackEl.getBoundingClientRect();
+      const flipDelta = first ? first.top - last.top : 0;
+      const targetDelta = expanded ? computeHeroAlignDelta() : 0;
+
+      if (flipDelta) {
+        musicStackEl.style.transition = 'none';
+        musicStackEl.style.transform = `translateY(${flipDelta}px)`;
+        musicStackEl.getBoundingClientRect(); // force reflow before releasing
+        requestAnimationFrame(() => {
+          musicStackEl.style.transition = '';
+          musicStackEl.style.transform = `translateY(${targetDelta}px)`;
+        });
+      } else {
+        musicStackEl.style.transform = `translateY(${targetDelta}px)`;
+      }
+
+      // Re-syncs the scroll-driven overflow transform on .cream-card
+      // --music for the tracklist's new (settled) height. Harmless to
+      // run right away even mid-FLIP: collapsing always resolves to 0
+      // overflow, and expanding starts from a scrollTop of 0, so this
+      // won't reintroduce the jump just cancelled above.
+      if (window.wrUpdateCreamTrack) {
+        window.wrUpdateCreamTrack();
+        setTimeout(window.wrUpdateCreamTrack, 400);
+      }
+
+      if (!expanded && musicCardEl) {
+        // .is-top-anchored has been held through the collapse (see
+        // above and its CSS comment) so the browser doesn't
+        // live-recenter while the tracklist is shrinking. Once that's
+        // had time to settle, release it back to the default
+        // align-items:center — with its own small FLIP, so that
+        // switch is smooth too, rather than a final snap.
+        topAnchorReleaseTimeout = setTimeout(() => {
+          topAnchorReleaseTimeout = null;
+          const beforeRelease = musicStackEl.getBoundingClientRect();
+          musicCardEl.classList.remove('is-top-anchored');
+          void musicStackEl.getBoundingClientRect(); // force reflow
+          const afterRelease = musicStackEl.getBoundingClientRect();
+          const releaseDelta = beforeRelease.top - afterRelease.top;
+          if (releaseDelta) {
+            musicStackEl.style.transition = 'none';
+            musicStackEl.style.transform = `translateY(${releaseDelta}px)`;
+            musicStackEl.getBoundingClientRect(); // force reflow before releasing
+            requestAnimationFrame(() => {
+              musicStackEl.style.transition = '';
+              musicStackEl.style.transform = '';
+            });
+          }
+        }, 400);
+      }
+    }
+
+    wrExpandBtn.addEventListener('click', () => {
+      setTracklistExpanded(!wrTracklistEl.classList.contains('is-expanded'));
+    });
+
+    window.addEventListener('resize', () => {
+      if (wrTracklistEl.classList.contains('is-expanded')) {
+        updateMusicStackOffset();
+      }
+    });
+  </script>
+
+
+  <!-- ── Spotify IFrame API: drives the custom player UI + CD spin ── -->
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+  <script>
+    window.onSpotifyIframeApiReady = (IFrameAPI) => {
+      const element = document.getElementById('spotify-embed');
+      const cdImage = document.getElementById('cdImage');
+
+      const trackEls = Array.from(document.querySelectorAll('#wrTracklist .wr-track'));
+      const tracklistEl = document.getElementById('wrTracklist');
+      const playBtn = document.getElementById('wrPlayBtn');
+      const playIcon = document.getElementById('wrPlayIcon');
+      const prevBtn = document.getElementById('wrPrevBtn');
+      const nextBtn = document.getElementById('wrNextBtn');
+      const progressRow = document.getElementById('wrProgressRow');
+      const progressHit = document.getElementById('wrProgressHit');
+      const progressThumb = document.getElementById('wrProgressThumb');
+      const timerEl = document.getElementById('wrTimer');
+
+      // "-MM:SS" counting down to a plain "00:00" (no minus) at the end.
+      function formatCountdown(ms) {
+        const totalSeconds = Math.max(0, Math.round(ms / 1000));
+        const mm = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const ss = String(totalSeconds % 60).padStart(2, '0');
+        const sign = totalSeconds > 0 ? '-' : '';
+        return `${sign}${mm}:${ss}`;
+      }
+
+      const ICON_PLAY = 'music-icons/icon-play.png';
+      const ICON_PAUSE = 'music-icons/icon-pause.png';
+
+      let currentIndex = 0;
+      let currentDurationMs = 0;
+      let dragging = false;
+      let trackEnded = false;
+      let lastPlayingPosition = 0;
+      let lastPlayingDuration = 0;
+
+      // The iFrame API only fires playback_update roughly once a second,
+      // which made the bar visibly "step" forward instead of gliding.
+      // To smooth it out, we keep a local (position, timestamp) pair
+      // from the most recent update and interpolate every animation
+      // frame based on elapsed real time, only snapping back to the
+      // API's real position whenever a fresh update arrives (which also
+      // corrects any drift).
+      let progressPlaying = false;
+      let basePosition = 0;
+      let baseTimestamp = 0;
+      let isPausedState = true;
+      let playRequestToken = 0;
+
+      // Right after a track loads (skip/select, or the auto-advance on
+      // natural end below), the iFrame API can still deliver one or two
+      // playback_update events describing the track we just moved away
+      // from — a known Spotify quirk where position/duration briefly lag
+      // behind the real, newly-loaded track. Left unchecked, those stale
+      // events stomp the fresh 0:00 state loadTrack() just set. The
+      // genuine first update for a freshly-loaded track always reports a
+      // position at/near 0, so that's what's waited for below.
+      let expectingFreshTrack = false;
+
+      // A seek issued while the track is paused/not-yet-playing (e.g.
+      // dragging the bar right after loading a new track, before ever
+      // hitting play) — Spotify's embed silently ignores EmbedController
+      // .seek() called before playback has actually started, so it would
+      // otherwise still start from 0 the moment play is pressed. This
+      // remembers the target position so it can be re-issued once
+      // playback_update confirms audio has genuinely begun. See the
+      // pointerup handler (where it's set) and the playback_update
+      // listener (where it's consumed) below.
+      let pendingSeekMs = null;
+
+      // Set once loadTrack() exists (inside the createController
+      // callback below); tickProgress needs a way to trigger the next
+      // track without being nested inside that closure itself.
+      let trackAdvanceHandler = null;
+
+      function renderProgress(positionMs, durationMs) {
+        if (durationMs > 0) {
+          progressThumb.style.width = Math.min(100, (positionMs / durationMs) * 100) + '%';
+          timerEl.textContent = formatCountdown(durationMs - positionMs);
+        }
+      }
+
+      function tickProgress() {
+        if (progressPlaying && !dragging && currentDurationMs > 0) {
+          const elapsed = performance.now() - baseTimestamp;
+          const position = Math.min(currentDurationMs, basePosition + elapsed);
+          renderProgress(position, currentDurationMs);
+
+          // Fallback "ended" detection, driven by our own interpolated
+          // clock rather than waiting on another playback_update from
+          // Spotify. The iFrame API doesn't reliably fire a final
+          // isPaused:true update once a track (especially a preview
+          // clip) actually finishes — when that happens the
+          // listener-based check below never runs, and the track just
+          // sits there: CD still spinning, timer frozen at 00:00, next
+          // track never selected. Advancing here as soon as our own
+          // clock reaches the track's duration fixes that regardless of
+          // whether Spotify ever tells us it stopped.
+          if (!trackEnded && trackAdvanceHandler && (currentDurationMs - position) <= 250) {
+            trackEnded = true;
+            trackAdvanceHandler();
+          }
+        }
+        requestAnimationFrame(tickProgress);
+      }
+      tickProgress();
+
+      function scrollActiveIntoView(index) {
+        const track = trackEls[index];
+        const listRect = tracklistEl.getBoundingClientRect();
+        const trackRect = track.getBoundingClientRect();
+        const offset = (trackRect.top - listRect.top) + tracklistEl.scrollTop;
+        tracklistEl.scrollTop = offset;
+      }
+
+      function setActiveTrack(index) {
+        trackEls.forEach((el, i) => el.classList.toggle('is-active', i === index));
+        scrollActiveIntoView(index);
+      }
+
+      const callback = (EmbedController) => {
+        // In preview mode, calling EmbedController.play() immediately
+        // after loadUri() is unreliable — the embed sometimes silently
+        // ignores it (a known quirk of Spotify's iframe player), so a
+        // preview track can advance on "ended" but then just sit there
+        // paused instead of continuing to play. To work around it, we
+        // keep re-issuing play() a few times, a little further apart
+        // each time, until playback actually starts — but only for the
+        // track that requested it, and only until the user does
+        // something else (manual play/pause, skip, seek) which
+        // invalidates the request.
+        function requestAutoplay(index) {
+          const token = ++playRequestToken;
+          const tryPlay = (attempt) => {
+            if (token !== playRequestToken || currentIndex !== index || !isPausedState) return;
+            EmbedController.play();
+            if (attempt < 4) setTimeout(() => tryPlay(attempt + 1), 300 + attempt * 250);
+          };
+          tryPlay(0);
+        }
+
+        function loadTrack(index, autoplay) {
+          currentIndex = (index + trackEls.length) % trackEls.length;
+          trackEnded = false;
+          lastPlayingPosition = 0;
+          lastPlayingDuration = 0;
+          expectingFreshTrack = true;
+          pendingSeekMs = null;
+          setActiveTrack(currentIndex);
+          progressPlaying = false;
+          basePosition = 0;
+          baseTimestamp = performance.now();
+          progressThumb.style.width = '0%';
+          timerEl.textContent = '-00:00';
+          // A freshly loaded URI has nothing playing yet — reset this
+          // now rather than waiting for the API's own playback_update.
+          // Without it, isPausedState is still whatever the *previous*
+          // track reported, and if that was "playing" (false),
+          // requestAutoplay's very first check below reads it as
+          // "already playing" and never calls play() on the new track
+          // at all — leaving it loaded but silent until the pause
+          // button is clicked (which then actually starts it).
+          isPausedState = true;
+          // Reflect "not playing" immediately on a manual skip/select,
+          // rather than waiting on the API's own playback_update to
+          // report it — without this the pause icon/spinning CD would
+          // hang over from the previous track until that event arrives.
+          // Skipped when autoplay is true (natural end-of-track only,
+          // now that manual skip never autoplays) since the icon/CD
+          // are already correctly showing "playing" from the track
+          // that just finished, and resetting then immediately
+          // flipping back would just flicker.
+          if (!autoplay) {
+            cdImage.classList.remove('playing');
+            playIcon.src = ICON_PLAY;
+            playBtn.setAttribute('aria-label', 'Play');
+          }
+          EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
+          if (autoplay) requestAutoplay(currentIndex);
+        }
+        trackAdvanceHandler = () => loadTrack(currentIndex + 1, true);
+
+        EmbedController.addListener('playback_update', (e) => {
+          const { isPaused, position, duration } = e.data;
+
+          // Discard updates that still belong to the track we just
+          // navigated away from — see the expectingFreshTrack comment
+          // above. Wait for the first update whose position is close to
+          // 0 (the genuine signature of a just-loaded track) before
+          // trusting anything it says.
+          if (expectingFreshTrack) {
+            if (position > 1500) return;
+            expectingFreshTrack = false;
+          }
+
+          cdImage.classList.toggle('playing', !isPaused);
+          playIcon.src = isPaused ? ICON_PLAY : ICON_PAUSE;
+          playBtn.setAttribute('aria-label', isPaused ? 'Play' : 'Pause');
+          const wasPaused = isPausedState;
+          isPausedState = isPaused;
+
+          // Some updates — particularly the one where isPaused flips to
+          // true — report duration as 0/undefined even mid-track (see
+          // the "ended" comment below for the same quirk with
+          // position). Only trust duration when it's a real value, so a
+          // pause doesn't wipe out currentDurationMs.
+          //
+          // Seeking itself is always available now (.is-seekable is set
+          // permanently in markup) — previews used to be blocked below
+          // on the assumption Spotify couldn't seek within a preview
+          // clip, but that assumption doesn't hold and just left the
+          // bar dead for anyone not logged into Spotify.
+          if (duration > 0) {
+            currentDurationMs = duration;
+          }
+
+          progressPlaying = !isPaused;
+          if (!dragging && duration > 0) {
+            basePosition = position;
+            baseTimestamp = performance.now();
+            renderProgress(position, duration);
+          }
+
+          // Playback has just genuinely started (as opposed to a
+          // periodic update while already playing) — if the person
+          // dragged the bar while the track was paused, this is the
+          // moment to actually apply that seek. Spotify ignored the
+          // seek() call issued back when they dragged (it silently
+          // no-ops before playback begins), so without this the track
+          // would otherwise start over from 0 despite the bar already
+          // showing the dragged-to position.
+          if (wasPaused && !isPaused && pendingSeekMs != null) {
+            const seekMs = pendingSeekMs;
+            pendingSeekMs = null;
+            EmbedController.seek(seekMs / 1000);
+            basePosition = seekMs;
+            baseTimestamp = performance.now();
+            renderProgress(seekMs, currentDurationMs);
+          }
+
+          // The iFrame API has no explicit "ended" event, so infer it.
+          // Some players reset position back to ~0 in the very same
+          // update where isPaused flips true once a track finishes, so
+          // checking that update's own position is unreliable — instead
+          // compare against the last position seen *while still
+          // playing*, which reflects where playback actually was right
+          // before it stopped.
+          if (!isPaused) {
+            lastPlayingPosition = position;
+            lastPlayingDuration = duration;
+            trackEnded = false;
+          } else if (!trackEnded && lastPlayingDuration > 0) {
+            const remaining = lastPlayingDuration - lastPlayingPosition;
+            const pctComplete = lastPlayingPosition / lastPlayingDuration;
+            if (remaining <= 1200 || pctComplete >= 0.97) {
+              trackEnded = true;
+              loadTrack(currentIndex + 1, true);
+            }
+          }
+        });
+
+        playBtn.addEventListener('click', () => {
+          playRequestToken++;
+          EmbedController.togglePlay();
+        });
+        // Manual skip/select never autoplays — loading a new URI and
+        // then immediately forcing play() on it is unreliable in the
+        // Spotify embed (the retry-until-it-sticks workaround in
+        // requestAutoplay papers over that, but still causes stalls/
+        // buffering on the next track). Only a track finishing on its
+        // own (see the "ended" handling above) autoplays the next one;
+        // any manual skip or track selection just loads and waits for
+        // the person to hit play.
+        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, false));
+        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, false));
+
+        trackEls.forEach((el, i) => {
+          el.addEventListener('click', () => loadTrack(i, false));
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              loadTrack(i, false);
+            }
+          });
+        });
+
+        function ratioFromClientX(clientX) {
+          const rect = progressHit.getBoundingClientRect();
+          return Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+        }
+
+        progressHit.addEventListener('pointerdown', (e) => {
+          dragging = true;
+          progressHit.setPointerCapture(e.pointerId);
+          const ratio = ratioFromClientX(e.clientX);
+          progressThumb.style.width = (ratio * 100) + '%';
+          if (currentDurationMs > 0) timerEl.textContent = formatCountdown(currentDurationMs * (1 - ratio));
+        });
+        progressHit.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          const ratio = ratioFromClientX(e.clientX);
+          progressThumb.style.width = (ratio * 100) + '%';
+          if (currentDurationMs > 0) timerEl.textContent = formatCountdown(currentDurationMs * (1 - ratio));
+        });
+        progressHit.addEventListener('pointerup', (e) => {
+          if (!dragging) return;
+          dragging = false;
+          progressHit.releasePointerCapture(e.pointerId);
+          const ratio = ratioFromClientX(e.clientX);
+          if (currentDurationMs > 0) {
+            const seekMs = ratio * currentDurationMs;
+            basePosition = seekMs;
+            baseTimestamp = performance.now();
+            EmbedController.seek(seekMs / 1000);
+            // Paused/not-yet-playing: Spotify ignores that seek() call
+            // above until playback actually starts, so remember the
+            // target and re-issue it once the playback_update listener
+            // sees play actually begin (see there for why).
+            pendingSeekMs = isPausedState ? seekMs : null;
+          }
+        });
+        progressHit.addEventListener('pointercancel', () => { dragging = false; });
+
+        setActiveTrack(currentIndex);
+      };
+
+      const options = {
+        uri: trackEls[0].dataset.uri,
+        width: '100%',
+        height: '80'
+      };
+
+      IFrameAPI.createController(element, options, callback);
+    };
+  </script>
+
+  <!-- ── Cream column: vertical scroll drives an L-shaped card slide (PC only) ──
+       Music → Brain Games slides horizontally; Brain Games → blank card
+       slides vertically. Scroll interaction itself is always vertical. ── -->
+  <script>
+    (function () {
+      const creamCol = document.getElementById('creamCol');
+      const creamTrack = document.getElementById('creamTrack');
+      const creamViewportEl = document.querySelector('.cream-viewport');
+      const musicCardEl = document.querySelector('.cream-card--music');
+      const overflowSpacer = document.getElementById('trackOverflowSpacer');
+      if (!creamCol || !creamTrack) return;
+
+      // How much taller the music card is than the viewport right now
+      // — only non-zero on desktop, while the tracklist is expanded,
+      // and only when it genuinely doesn't fit.
+      function getTrackOverflow() {
+        const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+        if (!isDesktop || !musicCardEl || !creamViewportEl) return 0;
+        if (!musicCardEl.classList.contains('is-expanded')) return 0;
+        return Math.max(0, musicCardEl.scrollHeight - creamViewportEl.clientHeight);
+      }
+
+      function updateCreamTrack() {
+        const isDesktop = window.matchMedia('(min-width: 651px)').matches;
+        if (!isDesktop) {
+          creamTrack.style.transform = '';
+          if (musicCardEl) musicCardEl.style.transform = '';
+          if (overflowSpacer) overflowSpacer.style.height = '0px';
+          creamCol.classList.remove('tracklist-scroll-active');
+          return;
+        }
+
+        const overflowPx = getTrackOverflow();
+        if (overflowSpacer) overflowSpacer.style.height = overflowPx + 'px';
+        // Mandatory scroll-snap only has a snap point at the very top
+        // and at the start of the next card, so while there's overflow
+        // room to scroll through, snapping is paused — otherwise it
+        // fights the user reading down the tracklist.
+        creamCol.classList.toggle('tracklist-scroll-active', overflowPx > 0);
+
+        const pageHeight = creamCol.clientHeight;
+        const scrollTop = creamCol.scrollTop;
+
+        // First, consume the tracklist's own overflow: the music card
+        // slides up in place, revealing the rest of the tracklist,
+        // before any card-to-card progress is allowed to start.
+        const musicPhase = Math.min(scrollTop, overflowPx);
+        if (musicCardEl) {
+          musicCardEl.style.transform = musicPhase ? `translateY(-${musicPhase}px)` : '';
+        }
+
+        // 0 = music card, 1 = games card, 2 = blank card.
+        const remainingScroll = Math.max(0, scrollTop - overflowPx);
+        const pageFloat = pageHeight > 0
+          ? Math.min(2, Math.max(0, remainingScroll / pageHeight))
+          : 0;
+        const xProgress = Math.min(1, pageFloat);           // music → games
+        const yProgress = Math.max(0, Math.min(1, pageFloat - 1)); // games → blank
+        creamTrack.style.transform = `translate(-${xProgress * 50}%, -${yProgress * 50}%)`;
+      }
+
+      creamCol.addEventListener('scroll', updateCreamTrack, { passive: true });
+      window.addEventListener('resize', updateCreamTrack);
+      updateCreamTrack();
+
+      // Exposed so the tracklist expand/collapse handler can trigger a
+      // recalculation as soon as the card's height changes.
+      window.wrUpdateCreamTrack = updateCreamTrack;
+    })();
+  </script>
+
+  <!-- ── Keep the header's right edge aligned with the cream column's
+       content edge, even though .cream-col has a real, visible scrollbar.
+       A visible scrollbar reserves actual width inside .cream-col,
+       shrinking its content from the right — but the header is
+       position:fixed and spans the full viewport, so it's untouched by
+       that. Rather than hiding the scrollbar (which removes the visual
+       scroll cue entirely), we measure the scrollbar's real width and
+       add that same amount to the header's right padding, so the logo
+       shifts left to meet the content edge exactly, on any browser/OS. ── -->
+  <script>
+    function wrSyncHeaderToScrollbar() {
+      const creamCol = document.querySelector('.cream-col');
+      const headerWrap = document.querySelector('.header-wrap');
+      if (!creamCol || !headerWrap) return;
+      const scrollbarWidth = creamCol.offsetWidth - creamCol.clientWidth;
+      headerWrap.style.setProperty('--scrollbar-w', scrollbarWidth + 'px');
+    }
+    window.addEventListener('load', wrSyncHeaderToScrollbar);
+    window.addEventListener('resize', wrSyncHeaderToScrollbar);
+  </script>
+
+  <script>
+    /* Safari's chrome-tinting (status bar, bottom URL pill) only reads
+       a static background-color on html/body — it never updates on
+       its own as the page scrolls. This swaps that color to cream once
+       the footer card is reached, and back to wine once it's scrolled
+       out of view, so the phone's chrome matches whichever end of the
+       page is on screen. Desktop doesn't scroll the page itself, so
+       this is a no-op there. */
+    (function () {
+      const footer = document.querySelector('.cream-card--blank');
+      if (!footer || !('IntersectionObserver' in window)) return;
+
+      const wine = getComputedStyle(document.documentElement).getPropertyValue('--wine').trim();
+      const cream = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const isFooterVisible = entries[0].isIntersecting;
+          const color = isFooterVisible ? cream : wine;
+          document.documentElement.style.backgroundColor = color;
+          document.body.style.backgroundColor = color;
+        },
+        { threshold: 0.15 }
+      );
+
+      observer.observe(footer);
+    })();
+  </script>
+
+</body>
 </html>
