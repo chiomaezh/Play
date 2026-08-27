@@ -1087,6 +1087,11 @@
     .wr-track.is-active { color: var(--wine); }
     .wr-track.is-active .wr-track-num { opacity: 1; }
     .wr-track:hover { opacity: 0.7; }
+    /* The currently-playing track shouldn't be selectable — clicking it
+       would just reload/restart the same track it already is. Disabling
+       pointer events also stops the hover dim above from applying. */
+    .wr-track.is-playing { pointer-events: none; cursor: default; }
+    .wr-track.is-playing:hover { opacity: 1; }
 
     /* Progress bar: same drag pattern as the weather-reel scrollbar,
        but sharp (no border-radius) and in the cream card's dark-on-
@@ -2133,6 +2138,17 @@
       // listener (where it's consumed) below.
       let pendingSeekMs = null;
 
+      // A track requested to autoplay (natural end-of-track, or a manual
+      // skip/select made while something was already playing) whose
+      // EmbedController.play() call is deferred until we actually know
+      // the new track has loaded — see the expectingFreshTrack block in
+      // the playback_update listener, where this is consumed. Calling
+      // play() blindly right after loadUri() (before Spotify has
+      // finished swapping tracks) is the unreliable case the comment on
+      // requestAutoplay below describes; waiting for the genuine first
+      // update for the new track avoids racing that load entirely.
+      let pendingAutoplayIndex = null;
+
       // Set once loadTrack() exists (inside the createController
       // callback below); tickProgress needs a way to trigger the next
       // track without being nested inside that closure itself.
@@ -2183,16 +2199,31 @@
         scrollActiveIntoView(index);
       }
 
+      // Keeps the currently-playing track non-clickable in the list (see
+      // .wr-track.is-playing above) — only the active track while it's
+      // actually playing, not merely loaded/paused. Re-run whenever
+      // isPausedState or currentIndex changes: from loadTrack (new track
+      // loaded, always starts paused) and from the playback_update
+      // listener (play/pause actually toggling on the loaded track).
+      function updatePlayingTrackState() {
+        trackEls.forEach((el, i) => {
+          const playing = i === currentIndex && !isPausedState;
+          el.classList.toggle('is-playing', playing);
+          el.setAttribute('aria-disabled', playing ? 'true' : 'false');
+        });
+      }
+
       const callback = (EmbedController) => {
-        // In preview mode, calling EmbedController.play() immediately
-        // after loadUri() is unreliable — the embed sometimes silently
-        // ignores it (a known quirk of Spotify's iframe player), so a
-        // preview track can advance on "ended" but then just sit there
-        // paused instead of continuing to play. To work around it, we
-        // keep re-issuing play() a few times, a little further apart
-        // each time, until playback actually starts — but only for the
-        // track that requested it, and only until the user does
-        // something else (manual play/pause, skip, seek) which
+        // Called once we've confirmed (via the fresh-track update in the
+        // playback_update listener below) that the new track has
+        // actually loaded — calling EmbedController.play() any earlier
+        // than that, e.g. right after loadUri(), is unreliable and the
+        // embed silently ignores it (a known quirk of Spotify's iframe
+        // player). Even at this point a single call can still be
+        // dropped, so we keep re-issuing play() a few times, a little
+        // further apart each time, until playback actually starts — but
+        // only for the track that requested it, and only until the user
+        // does something else (manual play/pause, skip, seek) which
         // invalidates the request.
         function requestAutoplay(index) {
           const token = ++playRequestToken;
@@ -2226,14 +2257,16 @@
           // at all — leaving it loaded but silent until the pause
           // button is clicked (which then actually starts it).
           isPausedState = true;
-          // Reflect "not playing" immediately on a manual skip/select,
-          // rather than waiting on the API's own playback_update to
-          // report it — without this the pause icon/spinning CD would
-          // hang over from the previous track until that event arrives.
-          // Skipped when autoplay is true (natural end-of-track only,
-          // now that manual skip never autoplays) since the icon/CD
-          // are already correctly showing "playing" from the track
-          // that just finished, and resetting then immediately
+          updatePlayingTrackState();
+          // Reflect "not playing" immediately on a non-autoplaying
+          // skip/select, rather than waiting on the API's own
+          // playback_update to report it — without this the pause
+          // icon/spinning CD would hang over from the previous track
+          // until that event arrives. Skipped whenever autoplay is true
+          // (natural end-of-track, or a manual skip/select made while
+          // something was already playing) since the icon/CD are
+          // already correctly showing "playing" from the track that
+          // just finished/was playing, and resetting then immediately
           // flipping back would just flicker.
           if (!autoplay) {
             cdImage.classList.remove('playing');
@@ -2241,7 +2274,7 @@
             playBtn.setAttribute('aria-label', 'Play');
           }
           EmbedController.loadUri(trackEls[currentIndex].dataset.uri);
-          if (autoplay) requestAutoplay(currentIndex);
+          pendingAutoplayIndex = autoplay ? currentIndex : null;
         }
         trackAdvanceHandler = () => loadTrack(currentIndex + 1, true);
 
@@ -2256,6 +2289,16 @@
           if (expectingFreshTrack) {
             if (position > 1500) return;
             expectingFreshTrack = false;
+            // The new track is now confirmed loaded — this is the right
+            // moment to actually issue play(), rather than immediately
+            // after loadUri() (see pendingAutoplayIndex above).
+            if (pendingAutoplayIndex === currentIndex) {
+              const idx = pendingAutoplayIndex;
+              pendingAutoplayIndex = null;
+              requestAutoplay(idx);
+            } else {
+              pendingAutoplayIndex = null;
+            }
           }
 
           cdImage.classList.toggle('playing', !isPaused);
@@ -2263,6 +2306,7 @@
           playBtn.setAttribute('aria-label', isPaused ? 'Play' : 'Pause');
           const wasPaused = isPausedState;
           isPausedState = isPaused;
+          updatePlayingTrackState();
 
           // Some updates — particularly the one where isPaused flips to
           // true — report duration as 0/undefined even mid-track (see
@@ -2328,23 +2372,32 @@
           playRequestToken++;
           EmbedController.togglePlay();
         });
-        // Manual skip/select never autoplays — loading a new URI and
-        // then immediately forcing play() on it is unreliable in the
-        // Spotify embed (the retry-until-it-sticks workaround in
-        // requestAutoplay papers over that, but still causes stalls/
-        // buffering on the next track). Only a track finishing on its
-        // own (see the "ended" handling above) autoplays the next one;
-        // any manual skip or track selection just loads and waits for
-        // the person to hit play.
-        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, false));
-        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, false));
+        // Manual skip/select mirrors whatever the person was already
+        // doing: if a track is currently playing, the newly-loaded one
+        // should start playing too (same requestAutoplay retry-until-it-
+        // sticks workaround already relied on for the natural-end
+        // autoplay above); if playback is paused, a skip/select just
+        // loads the track and waits for the person to hit play, as
+        // before.
+        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, !isPausedState));
+        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, !isPausedState));
+
+        // Selecting a track from the list. The currently-playing track
+        // itself is excluded via .wr-track.is-playing's pointer-events:
+        // none (so this never even fires for it from a click), but the
+        // guard below also covers the keydown path, which isn't blocked
+        // by pointer-events.
+        function selectTrack(i) {
+          if (i === currentIndex && !isPausedState) return;
+          loadTrack(i, !isPausedState);
+        }
 
         trackEls.forEach((el, i) => {
-          el.addEventListener('click', () => loadTrack(i, false));
+          el.addEventListener('click', () => selectTrack(i));
           el.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              loadTrack(i, false);
+              selectTrack(i);
             }
           });
         });
@@ -2387,6 +2440,7 @@
         progressHit.addEventListener('pointercancel', () => { dragging = false; });
 
         setActiveTrack(currentIndex);
+        updatePlayingTrackState();
       };
 
       const options = {
