@@ -2349,15 +2349,18 @@
           playRequestToken++;
           EmbedController.togglePlay();
         });
-        // Manual skip/select mirrors whatever the person was already
-        // doing: if a track is currently playing, the newly-loaded one
-        // should start playing too (same requestAutoplay retry-until-it-
-        // sticks workaround already relied on for the natural-end
-        // autoplay above); if playback is paused, a skip/select just
-        // loads the track and waits for the person to hit play, as
-        // before.
-        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, !isPausedState));
-        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, !isPausedState));
+        // Manual skip/select never autoplays — loading a new URI and
+        // then trying to force playback on it isn't reliable across
+        // browsers (some report themselves as playing — right track,
+        // real advancing position — while never actually starting the
+        // audio; there's no way to detect that mismatch from here). To
+        // avoid ever showing that false "playing" state, a manual skip
+        // or track selection just loads the track and waits for the
+        // person to hit play. Only a track finishing on its own (see
+        // the "ended" handling above) autoplays the next one, since
+        // that path doesn't have this problem.
+        prevBtn.addEventListener('click', () => loadTrack(currentIndex - 1, false));
+        nextBtn.addEventListener('click', () => loadTrack(currentIndex + 1, false));
 
         // Selecting a track from the list. The currently-playing track
         // itself is excluded via .wr-track.is-playing's pointer-events:
@@ -2366,7 +2369,7 @@
         // by pointer-events.
         function selectTrack(i) {
           if (i === currentIndex && !isPausedState) return;
-          loadTrack(i, !isPausedState);
+          loadTrack(i, false);
         }
 
         trackEls.forEach((el, i) => {
