@@ -2138,6 +2138,20 @@
       // listener (where it's consumed) below.
       let pendingSeekMs = null;
 
+      // Right after issuing EmbedController.seek() (pointerup below), the
+      // very next playback_update event(s) can still report the
+      // pre-seek position — the iFrame API's periodic update was already
+      // "in flight" before the seek landed. Left unchecked, that stale
+      // update would stomp the bar back to where it was, and then the
+      // *following* update (once the seek has actually taken effect)
+      // would snap it forward again — the visible "snap back, then
+      // forward" glitch. This mirrors the expectingFreshTrack pattern
+      // above: ignore position updates until one arrives close to the
+      // seek target, with a short timeout as a safety net in case
+      // Spotify never reports a matching position.
+      let expectingSeekMs = null;
+      let expectingSeekAt = 0;
+
       // Set once loadTrack() exists (inside the createController
       // callback below); tickProgress needs a way to trigger the next
       // track without being nested inside that closure itself.
@@ -2229,6 +2243,7 @@
           lastPlayingDuration = 0;
           expectingFreshTrack = true;
           pendingSeekMs = null;
+          expectingSeekMs = null;
           setActiveTrack(currentIndex);
           progressPlaying = false;
           basePosition = 0;
@@ -2301,6 +2316,21 @@
           }
 
           progressPlaying = !isPaused;
+
+          // Swallow stale updates left over from just before a seek (see
+          // expectingSeekMs above) — unless the target position was
+          // reached, or the timeout has passed, in which case stop
+          // waiting and trust the API again as normal.
+          if (expectingSeekMs != null) {
+            const closeEnough = Math.abs(position - expectingSeekMs) < 1000;
+            const timedOut = (performance.now() - expectingSeekAt) > 2000;
+            if (closeEnough || timedOut) {
+              expectingSeekMs = null;
+            } else {
+              return;
+            }
+          }
+
           if (!dragging && duration > 0) {
             basePosition = position;
             baseTimestamp = performance.now();
@@ -2415,6 +2445,15 @@
             // target and re-issue it once the playback_update listener
             // sees play actually begin (see there for why).
             pendingSeekMs = isPausedState ? seekMs : null;
+            // Only while already playing does the next playback_update
+            // risk arriving with the stale pre-seek position (see
+            // expectingSeekMs above) — while paused, nothing ticks until
+            // playback resumes, and that resume is handled entirely by
+            // pendingSeekMs instead.
+            if (!isPausedState) {
+              expectingSeekMs = seekMs;
+              expectingSeekAt = performance.now();
+            }
           }
         });
         progressHit.addEventListener('pointercancel', () => { dragging = false; });
