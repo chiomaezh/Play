@@ -49,6 +49,37 @@
 
     .page { width: 100%; max-width: 720px; }
 
+    /* Wide row — breaks specific rows (dividers, nav links) out of the
+       720px .page to span a much wider band on desktop, matching the
+       wide-line treatment used on Buzzword / Services. Left untouched
+       below 721px, where .page is already close to the viewport width,
+       so mobile is unaffected. The main game section is never wrapped
+       in this — it stays at its current width/position. */
+    @media (min-width: 721px) {
+      .wide-row {
+        position: relative;
+        left: 50%;
+        width: 100vw;
+        margin-left: -50vw;
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+        box-sizing: border-box;
+      }
+    }
+    @media (min-width: 721px) and (orientation: landscape) and (max-height: 500px) {
+      .wide-row {
+        position: static;
+        left: auto;
+        width: auto;
+        margin-left: 0;
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+    .full-divider {
+      border-top: 0.5px solid var(--border);
+    }
+
     .site-header {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -271,10 +302,14 @@
     }
     .complete-banner.show { display: block; }
 
+    /* Full-width column — spans the same 720px width as the word search
+       grid, flush-left (rather than the narrower centered treatment). */
     .reflection {
-      border-top: 0.5px solid var(--border);
-      padding-top: 2rem;
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
+    }
+    /* Divider above "What to do with what you found" */
+    .reflection-divider {
+      margin-bottom: 3.5rem;
     }
     .reflection h2 {
       font-family: var(--font-body);
@@ -291,7 +326,6 @@
       font-size: 14.5px;
       color: var(--text);
       line-height: 1.9;
-      max-width: 540px;
     }
 
     /* ── Next/previous game nav ── */
@@ -299,8 +333,6 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-top: 2.5rem;
-      margin-bottom: -0.5rem;
     }
     .game-nav a {
       font-family: var(--font-body);
@@ -325,17 +357,46 @@
       cursor: default;
     }
     .game-nav-top {
-      margin-top: 0;
       margin-bottom: 3rem;
+    }
+    .game-nav-bottom {
+      margin-bottom: 2.5rem;
     }
     .game-nav-single {
       justify-content: flex-end;
     }
 
+    /* Desktop only: anchor the prev/next links to the bottom edge of the
+       reflection paragraph, spanning out into the wide margins either
+       side, instead of sitting as a separate row underneath. */
+    .reflection-block {
+      position: relative;
+    }
+    @media (min-width: 721px) {
+      .game-nav-bottom {
+        position: absolute;
+        left: calc(400px - 50vw);
+        right: calc(400px - 50vw);
+        bottom: 0;
+        margin-bottom: 0;
+      }
+    }
+    @media (min-width: 721px) and (orientation: landscape) and (max-height: 500px) {
+      .game-nav-bottom {
+        position: static;
+        left: auto;
+        right: auto;
+        margin-bottom: 2.5rem;
+      }
+    }
+
+    /* Divider above the footer */
+    .footer-divider {
+      margin-top: 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+
     .site-footer {
-      border-top: 0.5px solid var(--border);
-      padding-top: 1.5rem;
-      margin-top: 4rem;
       display: grid;
       grid-template-columns: 1.4fr auto auto;
       column-gap: 0.75rem;
@@ -453,28 +514,32 @@
 <body>
 <div class="page">
 
- <header class="site-header">
-  <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
-    <span></span>
-    <span></span>
-  </button>
-  <span class="site-tag">Game 01</span>
-  <a href="https://www.sabi.london" class="site-name" style="text-decoration: none; color: inherit;">S A B I</a>
-</header>
+  <div class="wide-row">
+    <header class="site-header">
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+      </button>
+      <span class="site-tag">Game 01</span>
+      <a href="https://www.sabi.london" class="site-name" style="text-decoration: none; color: inherit;">S A B I</a>
+    </header>
 
-  <nav class="menu-accordion" id="menuAccordion">
-    <div class="menu-list">
-      <a href="https://sabi.london/about">About</a>
-      <a href="https://sabi.london/services/">Services</a>
-      <a href="https://play.sabi.london">Play</a>
-    </div>
-  </nav>
+    <nav class="menu-accordion" id="menuAccordion">
+      <div class="menu-list">
+        <a href="https://sabi.london/about">About</a>
+        <a href="https://sabi.london/services/">Services</a>
+        <a href="https://play.sabi.london">Play</a>
+      </div>
+    </nav>
 
-  <div class="header-divider"></div>
+    <div class="header-divider full-divider"></div>
+  </div>
 
   <main>
-    <div class="game-nav game-nav-top game-nav-single">
-      <a href="https://play.sabi.london/buzzword/">Game 02 →</a>
+    <div class="wide-row">
+      <div class="game-nav game-nav-top game-nav-single">
+        <a href="https://play.sabi.london/buzzword/">Game 02 →</a>
+      </div>
     </div>
 
     <p class="game-label">Word Search</p>
@@ -500,19 +565,30 @@
       <button class="btn-reset" onclick="resetGame()">↺ Reset</button>
     </div>
 
-    <div class="reflection">
-      <h2>What to do with what you found</h2>
-      <p>
-        The words that stood out to you — especially the ones you found without looking —
-        are clues to how you instinctively understand your brand. Now you can bring them to a consultation, and use them as guidelines for your brand identity. At SABI, we use exercises like this to help
-        creative teams articulate their ideas.
-      </p>
-      <div class="game-nav">
+    <div class="wide-row">
+      <div class="reflection-divider full-divider"></div>
+    </div>
+
+    <div class="reflection-block">
+      <div class="reflection">
+        <h2>What to do with what you found</h2>
+        <p>
+          The words that stood out to you — especially the ones you found without looking —
+          are clues to how you instinctively understand your brand. Now you can bring them to a consultation, and use them as guidelines for your brand identity. At SABI, we use exercises like this to help
+          creative teams articulate their ideas.
+        </p>
+      </div>
+
+      <div class="game-nav game-nav-bottom">
         <a class="inactive" aria-disabled="true" tabindex="-1">← Previous Game</a>
         <a href="https://play.sabi.london/buzzword/">Next Game →</a>
       </div>
     </div>
   </main>
+
+  <div class="wide-row">
+    <div class="footer-divider full-divider"></div>
+  </div>
 
   <footer class="site-footer">
     <div class="footer-col">
