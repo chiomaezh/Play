@@ -48,10 +48,50 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 3rem 1.5rem 5rem;
+      padding: 3rem 0 5rem;
     }
 
-    .page { width: 100%; max-width: 720px; }
+    .page { width: 100%; }
+
+    /* Narrow, centered wrapper for reading content (matches sabi.london/services/) */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    /* Wide row: used for the header, nav links, dividers and footer.
+       Stays the same as .container on mobile, but opens up to full width
+       with generous side padding on desktop/tablet — same breakpoint
+       convention as sabi.london/services/ */
+    .wide-row {
+      max-width: 720px;
+      margin: 0 auto;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+    @media (min-width: 721px) {
+      .wide-row {
+        max-width: none;
+        width: 100%;
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+      }
+    }
+    @media (min-width: 721px) and (orientation: landscape) and (max-height: 500px) {
+      .wide-row {
+        max-width: 720px;
+        width: auto;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+    }
+
+    /* Full-width horizontal rule, drawn inside a .wide-row parent */
+    .full-divider {
+      border-top: 0.5px solid var(--border);
+    }
 
     /* ── Header ── */
     .site-header {
@@ -132,7 +172,6 @@
     }
 
     .header-divider {
-      border-top: 0.5px solid var(--border);
       margin-bottom: 1.75rem;
     }
 
@@ -156,6 +195,13 @@
       color: var(--text);
       margin-bottom: 1rem;
     }
+    /* Narrow reading column, centered within .container rather than
+       flush-left (flashcard/options/intro are 540px inside a 720px box) */
+    .game-content {
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
     .game-intro {
       font-family: var(--font-body);
       font-weight: 300;
@@ -325,9 +371,13 @@
 
     /* ── Reflection ── */
     .reflection {
-      border-top: 0.5px solid var(--border);
-      padding-top: 2rem;
-      margin-bottom: 3rem;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* Divider above "Why it matters" */
+    .reflection-divider {
+      margin-bottom: 3.5rem;
     }
     .reflection h2 {
       font-family: var(--font-body);
@@ -352,8 +402,6 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-top: 2.5rem;
-      margin-bottom: -0.5rem;
     }
     .game-nav a {
       font-family: var(--font-body);
@@ -377,19 +425,24 @@
       cursor: default;
     }
     .game-nav-top {
-      margin-top: 0;
       margin-bottom: 3rem;
+    }
+    .game-nav-bottom {
+      margin-bottom: 2.5rem;
     }
 
     /* ── Site footer ── */
 .site-footer {
-  border-top: 0.5px solid var(--border);
-  padding-top: 1.5rem;
-  margin-top: 4rem;
   display: grid;
   grid-template-columns: 1.4fr auto auto;
   column-gap: 0.75rem;
   align-items: start;
+}
+
+/* Divider above the footer */
+.footer-divider {
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .footer-col {
@@ -489,75 +542,97 @@
 <body>
 <div class="page">
 
-  <header class="site-header">
-    <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
-      <span></span>
-      <span></span>
-    </button>
-    <span class="site-tag">Game 02</span>
-    <a href="https://www.sabi.london" class="site-name">S A B I</a>
-  </header>
+  <div class="wide-row site-header-wrap">
+    <header class="site-header">
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+      </button>
+      <span class="site-tag">Game 02</span>
+      <a href="https://www.sabi.london" class="site-name">S A B I</a>
+    </header>
 
-  <nav class="menu-accordion" id="menuAccordion">
-    <div class="menu-list">
-      <a href="https://sabi.london/about">About</a>
-      <a href="https://sabi.london/services/">Services</a>
-      <a href="https://play.sabi.london">Play</a>
-    </div>
-  </nav>
+    <nav class="menu-accordion" id="menuAccordion">
+      <div class="menu-list">
+        <a href="https://sabi.london/about">About</a>
+        <a href="https://sabi.london/services/">Services</a>
+        <a href="https://play.sabi.london">Play</a>
+      </div>
+    </nav>
 
-  <div class="header-divider"></div>
+    <div class="full-divider header-divider"></div>
+  </div>
 
   <main>
-    <div class="game-nav game-nav-top">
-      <a href="https://play.sabi.london/word-search/">← Game 01</a>
-      <a class="inactive" aria-disabled="true" tabindex="-1">Game 03 →</a>
+    <div class="wide-row">
+      <div class="game-nav game-nav-top">
+        <a href="https://play.sabi.london/word-search/">← Game 01</a>
+        <a class="inactive" aria-disabled="true" tabindex="-1">Game 03 →</a>
+      </div>
     </div>
 
-    <p class="game-label">Buzzword</p>
-    <h1 class="game-title">Know your jargon</h1>
-    <p class="game-intro">
-      These marketing acronyms describe the core business functions 
-      that every founder or creative needs to understand — whether
-      you remember the letters or not. Choose the right acronym to match
-      the definition on the flashcard below. You can switch to easy mode 
-      for hints.
-    </p>
+    <div class="container">
+      <div class="game-content">
+        <p class="game-label">Buzzword</p>
+        <h1 class="game-title">Know your jargon</h1>
+        <p class="game-intro">
+          These marketing acronyms describe the core business functions 
+          that every founder or creative needs to understand — whether
+          you remember the letters or not. Choose the right acronym to match
+          the definition on the flashcard below. You can switch to easy mode 
+          for hints.
+        </p>
 
-    <div class="mode-row">
-      <span class="mode-label" id="label-easy">EASY</span>
-      <button class="toggle" id="mode-toggle" aria-label="Toggle easy or pro mode" role="switch" aria-checked="false">
-        <span class="toggle-knob"></span>
-      </button>
-      <span class="mode-label active" id="label-pro">PRO</span>
+        <div class="mode-row">
+          <span class="mode-label" id="label-easy">EASY</span>
+          <button class="toggle" id="mode-toggle" aria-label="Toggle easy or pro mode" role="switch" aria-checked="false">
+            <span class="toggle-knob"></span>
+          </button>
+          <span class="mode-label active" id="label-pro">PRO</span>
+        </div>
+
+        <div class="flashcard">
+          <p id="definition-text"></p>
+        </div>
+
+        <div class="options" id="options"></div>
+
+        <div class="game-footer">
+          <span class="progress-text" id="progress">01 / 35</span>
+          <button class="btn-next" id="next-btn">Next →</button>
+        </div>
+      </div>
     </div>
 
-    <div class="flashcard">
-      <p id="definition-text"></p>
+    <div class="wide-row">
+      <div class="full-divider reflection-divider"></div>
     </div>
 
-    <div class="options" id="options"></div>
-
-    <div class="game-footer">
-      <span class="progress-text" id="progress">01 / 35</span>
-      <button class="btn-next" id="next-btn">Next →</button>
+    <div class="container">
+      <div class="reflection">
+        <h2>Why it matters</h2>
+        <p>
+          You don't need to memorise all of the marketing jargon, but you do need a
+          confident grasp of what each function does for your business.
+          These are terms that might come up in strategy sessions, investor calls,
+          or pitches.
+        </p>
+      </div>
     </div>
 
-    <div class="reflection">
-      <h2>Why it matters</h2>
-      <p>
-        You don't need to memorise all of the marketing jargon, but you do need a
-        confident grasp of what each function does for your business.
-        These are terms that might come up in strategy sessions, investor calls,
-        or pitches.
-      </p>
-      <div class="game-nav">
+    <div class="wide-row">
+      <div class="game-nav game-nav-bottom">
         <a href="https://play.sabi.london/word-search/">← Previous Game</a>
         <a class="inactive" aria-disabled="true" tabindex="-1">Next Game →</a>
       </div>
     </div>
   </main>
 
+  <div class="wide-row">
+    <div class="full-divider footer-divider"></div>
+  </div>
+
+  <div class="container">
  <footer class="site-footer">
   <div class="footer-col">
     <p class="footer-desc">A creative consultancy offering strategy and design<br>for culture-shaping presence and storytelling.</p>
@@ -583,8 +658,9 @@
       <a href="https://sabi.london/services/campaign">Campaign</a>
     </div>
   </div>
-</footer>
-  
+  </footer>
+  </div>
+
 </div>
 
 <script>
