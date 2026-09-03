@@ -371,16 +371,8 @@
 
     /* ── Reflection ── */
     .reflection {
-      max-width: 540px;
-      margin: 0 auto;
+      margin-bottom: 2.5rem;
     }
-
-    @media (max-width: 720px) {
-      .reflection {
-        margin-bottom: 2.5rem;
-      }
-    }
-
     /* Divider above "Why it matters" */
     .reflection-divider {
       margin-bottom: 3.5rem;
@@ -400,7 +392,6 @@
       font-size: 14.5px;
       color: var(--text);
       line-height: 1.9;
-      max-width: 540px;
     }
 
     /* ── Next/previous game nav ── */
@@ -427,6 +418,7 @@
     .game-nav .inactive {
       color: rgba(139, 140, 120, 0.6);
       border-bottom-color: rgba(139, 140, 120, 0.6);
+      opacity: 1;
       pointer-events: none;
       cursor: default;
     }
@@ -435,6 +427,33 @@
     }
     .game-nav-bottom {
       margin-bottom: 2.5rem;
+    }
+    .game-nav-single {
+      justify-content: flex-end;
+    }
+
+    /* Desktop only: anchor the prev/next links to the bottom edge of the
+       reflection paragraph, spanning out into the wide margins either
+       side, instead of sitting as a separate row underneath. */
+    .reflection-block {
+      position: relative;
+    }
+    @media (min-width: 721px) {
+      .game-nav-bottom {
+        position: absolute;
+        left: calc(400px - 50vw);
+        right: calc(400px - 50vw);
+        bottom: 0;
+        margin-bottom: 0;
+      }
+    }
+    @media (min-width: 721px) and (orientation: landscape) and (max-height: 500px) {
+      .game-nav-bottom {
+        position: static;
+        left: auto;
+        right: auto;
+        margin-bottom: 2.5rem;
+      }
     }
 
     /* ── Site footer ── */
@@ -615,21 +634,21 @@
     </div>
 
     <div class="container">
-      <div class="reflection">
-        <h2>Why it matters</h2>
-        <p>
-          You don't need to memorise all of the marketing jargon, but you do need a
-          confident grasp of what each function does for your business.
-          These are terms that might come up in strategy sessions, investor calls,
-          or pitches.
-        </p>
-      </div>
-    </div>
+      <div class="reflection-block">
+        <div class="reflection">
+          <h2>Why it matters</h2>
+          <p>
+            You don't need to memorise all of the marketing jargon, but you do need a
+            confident grasp of what each function does for your business.
+            These are terms that might come up in strategy sessions, investor calls,
+            or pitches.
+          </p>
+        </div>
 
-    <div class="wide-row">
-      <div class="game-nav game-nav-bottom">
-        <a href="https://play.sabi.london/word-search/">← Previous Game</a>
-        <a class="inactive" aria-disabled="true" tabindex="-1">Next Game →</a>
+        <div class="game-nav game-nav-bottom">
+          <a href="https://play.sabi.london/word-search/">← Previous Game</a>
+          <a class="inactive" aria-disabled="true" tabindex="-1">Next Game →</a>
+        </div>
       </div>
     </div>
   </main>
