@@ -2486,14 +2486,39 @@
       const overflowSpacer = document.getElementById('trackOverflowSpacer');
       if (!creamCol || !creamTrack) return;
 
-      // How much taller the music card is than the viewport right now
-      // — only non-zero on desktop, while the tracklist is expanded,
-      // and only when it genuinely doesn't fit.
+      // How far the music card needs to slide up so that, at max
+      // scroll, the "Listen on Spotify" link's bottom edge lines up
+      // with the bottom of the "All the good ideas are outside"
+      // tagline on the wine side — only non-zero on desktop, while the
+      // tracklist is expanded.
+      //
+      // getBoundingClientRect() reflects whatever transform is
+      // *currently* applied to musicCardEl, but this runs on every
+      // scroll tick while that transform is actively changing — so the
+      // card's own transform is cleared for the measurement (its
+      // scroll-driven translateY doesn't affect layout, only paint,
+      // so this doesn't shift anything else on screen) and restored
+      // immediately after, keeping the result stable regardless of
+      // current scroll progress.
       function getTrackOverflow() {
         const isDesktop = window.matchMedia('(min-width: 651px)').matches;
         if (!isDesktop || !musicCardEl || !creamViewportEl) return 0;
         if (!musicCardEl.classList.contains('is-expanded')) return 0;
-        return Math.max(0, musicCardEl.scrollHeight - creamViewportEl.clientHeight);
+
+        const spotifyLinkEl = document.querySelector('.wr-spotify-link');
+        const taglineEl = document.querySelector('.weather-tagline');
+        if (!spotifyLinkEl || !taglineEl) {
+          return Math.max(0, musicCardEl.scrollHeight - creamViewportEl.clientHeight);
+        }
+
+        const prevTransform = musicCardEl.style.transform;
+        musicCardEl.style.transform = '';
+        void musicCardEl.getBoundingClientRect(); // force reflow before measuring
+        const linkBottom = spotifyLinkEl.getBoundingClientRect().bottom;
+        const taglineBottom = taglineEl.getBoundingClientRect().bottom;
+        musicCardEl.style.transform = prevTransform;
+
+        return Math.max(0, linkBottom - taglineBottom);
       }
 
       function updateCreamTrack() {
