@@ -430,8 +430,8 @@
     }
 
     /* Desktop only: anchor the prev/next links to the bottom edge of the
-       reflection paragraph, spanning out into the wide margins either
-       side, instead of sitting as a separate row underneath. */
+       reflection paragraph, spanning out so their outer edges land
+       exactly on the footer divider's left/right edges. */
     .reflection-block {
       position: relative;
       margin-top: 3.5rem;
@@ -439,8 +439,8 @@
     @media (min-width: 721px) {
       .game-nav-bottom {
         position: absolute;
-        left: calc(400px - 50vw);
-        right: calc(400px - 50vw);
+        left: min(1rem, calc(400px - 50vw));
+        right: min(1rem, calc(400px - 50vw));
         bottom: 0;
         margin-bottom: 0;
       }
