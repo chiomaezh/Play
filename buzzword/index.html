@@ -439,8 +439,11 @@
     @media (min-width: 721px) {
       .game-nav-bottom {
         position: absolute;
-        left: min(1rem, calc(400px - 50vw));
-        right: min(1rem, calc(400px - 50vw));
+        /* The +8px nudges each side in from the raw divider-edge calc —
+           100vw includes the scrollbar gutter in most browsers, which was
+           pushing the links a few pixels past the footer divider's ends. */
+        left: min(1rem, calc(400px - 50vw + 8px));
+        right: min(1rem, calc(400px - 50vw + 8px));
         bottom: 0;
         margin-bottom: 0;
       }
