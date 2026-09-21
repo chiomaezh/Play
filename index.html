@@ -718,11 +718,13 @@
       left: 0;
       right: 0;
       z-index: 30;
-      padding: 1.6rem 1.5rem 0;
+      /* 3rem from the top on every width — same as the body's
+         padding-top on Services/About */
+      padding: 3rem 1.5rem 0;
     }
     @media (min-width: 651px) {
       .header-wrap {
-        padding: 2.25rem calc(2.5rem + var(--scrollbar-w, 0px)) 0 2.5rem;
+        padding: 3rem calc(2.5rem + var(--scrollbar-w, 0px)) 0 2.5rem;
       }
     }
 
@@ -745,8 +747,15 @@
 
     /* Hamburger — recoloured to the standard bg colour so it reads
        against the wine panel underneath it */
-    .menu-btn-wrap { position: relative; }
+    /* The wrap is deliberately NOT a positioning parent: the open menu
+       hangs off the header row itself (logo height), exactly like the
+       in-flow accordion on Services, rather than off the button. */
+    .menu-btn-wrap { position: static; }
     .menu-btn {
+      /* block, not inline: an inline button sits in a line box whose
+         height/baseline depend on the font, which left it off-centre
+         from the logo. As a block it centres like on Services. */
+      display: block;
       position: relative;
       width: 22px;
       height: 16px;
@@ -773,7 +782,7 @@
       position: absolute;
       top: 100%;
       left: 0;
-      margin-top: 0.75rem;
+      margin-top: 1rem;
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.25s ease;
@@ -1300,22 +1309,7 @@
          original reference page's header behaviour */
       .header-wrap {
         position: absolute;
-        /* Match the other pages: logo + hamburger sit 3rem from the
-           top (the body's padding-top on Services/About). Side padding
-           stays at 1.5rem, which already matches. */
-        padding-top: 3rem;
       }
-
-      /* Open-menu spacing, matched to Services:
-         - the button is a block (not inline) so it's centred on the
-           logo exactly like the other pages, in the closed and open
-           (X) states
-         - the wrap stops being the positioning parent, so the menu
-           hangs off the header row itself (logo height) with the same
-           1rem gap Services uses, instead of off the button */
-      .menu-btn { display: block; }
-      .menu-btn-wrap { position: static; }
-      .menu-accordion { margin-top: 1rem; }
     }
 
     /* ── Landscape block: phones only ──
