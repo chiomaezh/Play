@@ -600,11 +600,9 @@
       .footer-divider-mobile {
         display: block;
         margin-top: 2cm;
-        /* Cancels the card's own 1.5rem left/right padding so the line
-           reaches the true edges of the page, not just the card's
-           content box. */
-        margin-left: -1.5rem;
-        margin-right: -1.5rem;
+        /* Matches Brand_strategy.html: the divider stays within the
+           card's own 1.5rem padding, the same width as the footer
+           content below it — not stretched to the true screen edges. */
         border-top: 0.5px solid var(--border);
       }
     }
