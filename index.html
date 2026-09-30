@@ -212,10 +212,10 @@
       color: var(--bg);
       white-space: nowrap;
     }
-    /* Error state: retry button + "UPDATE / WEATHER" label pushed to the
-       right edge of the cell, both bottom-aligned with each other. */
+    /* Error state: retry button + "UPDATE / WEATHER" label centred
+       together in the cell, both bottom-aligned with each other. */
     .wr-city-weather.is-error {
-      justify-content: space-between;
+      justify-content: center;
       align-items: flex-end;
     }
     .wr-city-weather.is-error [data-icon] {
@@ -223,6 +223,12 @@
     }
     .wr-city-weather.is-error .wr-refresh-text {
       order: 1;
+    }
+    /* The (now-empty) temperature span would otherwise still take part
+       in the flex layout — including its share of the gap — and throw
+       off centring, so drop it out entirely while in the error state. */
+    .wr-city-weather.is-error [data-temp] {
+      display: none;
     }
     .wr-refresh-text {
       display: none;
