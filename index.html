@@ -1831,7 +1831,7 @@
       const isDesktop = window.matchMedia('(min-width: 651px)').matches;
       const visibleCount = isDesktop ? 5 : 3;
       const availableWidth = reel.clientWidth;
-      const minGap = 16;
+      const minGap = 0;
       const rawGap = (availableWidth - visibleCount * cardWidth) / (visibleCount - 1);
       const gap = Math.max(minGap, rawGap);
       reel.style.gap = gap + 'px';
